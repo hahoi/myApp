@@ -1,6 +1,8 @@
 .DS_Store
 node_modules
 /dist
+fb.js
+pthg-6750e-firebase-adminsdk-ytjyx-c8d1568c1c.json
 
 # local env files
 .env.local
