@@ -7,27 +7,28 @@ export const powerRouter = [
   {
     path: '/',
     hidden: false,
-    name: 'Main',
+    // name: 'Main',
     component: () => import('@/views/Main'),
     meta: { title: 'Main'},
     children: [
 
       {
         path: '/Users',
-        name: 'Users',
+        // name: 'Users',
         component: () => import('@/views/Users'),
+        meta: { title: '使用者管理', role: '使用者管理',icon:"mdi-home" }
       },
       {
         path: '/page1',
-        name: 'page1',
+        // name: 'page1',
         component: () => import('@/views/page1'),
-        meta: { title: '第一頁', role: 'G'}
+        meta: { title: '第一頁', role: '第一頁',icon:"mdi-home" }
       },
       {
         path: '/page2',
-        name: 'page2',
+        // name: 'page2',
         component: () => import('@/views/page2'),
-        meta: { title: '第二頁', role: 'H'}
+        meta: { title: '第二頁', role: '第二頁',icon:"mdi-contact-mail"}
       }
 
     ]

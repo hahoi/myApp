@@ -9,7 +9,7 @@ const state = {
   loading: true,  // this.$store.state.loading
   //權限控管
   // role: null,
-  newrouter: [],
+  newRouter: [],
 }
 const getters = {
   userId: state => state.userId,
@@ -35,17 +35,19 @@ const mutations = {
 
 }
 const actions = {
-  // ===依據角色role，儲存可使用的路由=====
+  // saveRoles({ commit }, newRouter) {
+  //     commit('setNewRouter', newRouter) //更新可使用的路由
+  // },
+
+
+    // ===依據角色role，儲存可使用的路由=====
   async saveRoles({ commit }, newRouter) {
-    try {
-      return new Promise((resolve) => {
-        commit('setNewWRouter', newRouter) //更新可使用的路由
-        resolve(newRouter);
-      });
-    }
-    catch (error) {
-      throw new Error(error)
-    }
+    return new Promise((resolve) => {
+      commit('setNewRouter', newRouter) //更新可使用的路由
+      resolve(newRouter);
+    }).catch((error)=> {
+      console.log('catch:', error);
+    });
   },
   async loginSet({ commit }, user) {
     try {

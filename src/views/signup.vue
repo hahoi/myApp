@@ -15,9 +15,9 @@
                 <v-spacer />
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on }">
-                    <v-btn link to="/" icon large v-on="on">離開</v-btn>
+                    <v-btn link to="/" icon large v-on="on">Login</v-btn>
                   </template>
-                  <span>不要註冊，離開</span>
+                  <span>離開註冊</span>
                 </v-tooltip>
               </v-toolbar>
               <v-card-text>

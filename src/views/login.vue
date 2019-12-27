@@ -137,7 +137,7 @@ export default {
                   .dispatch("loginSet", vm.User)
                   .then(() => {
                     // ============跳轉到指定頁面============
-                    vm.$router.push({ path: "/Main" });
+                    vm.$router.push({ path: "/" });
                   })
                   .catch(() => {
                     console.log("loginSet error");
