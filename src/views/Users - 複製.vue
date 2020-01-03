@@ -15,8 +15,15 @@
 
         <v-dialog v-model="dialog" fullscreen hide-overlay transition="dialog-bottom-transition">
           <template v-slot:activator="{ on }">
-            <!-- <v-btn color="primary" dark class="mb-2" v-on="on">新增使用者</v-btn> -->
+            <v-btn color="primary" dark class="mb-2" v-on="on">新增使用者</v-btn>
           </template>
+
+          <div class="text-center mb-4">
+            <v-overlay :opacity="0.5" z-index="1" :value="alert">
+              <v-alert color="red" dark transition="scale-transition">{{ alertResult }}</v-alert>
+            </v-overlay>
+          </div>
+
           <v-card outlined>
             <v-toolbar dark color="primary">
               <v-toolbar-title>
@@ -38,48 +45,61 @@
             <v-card-text>
               <v-container>
                 <v-row>
-                  <!-- <v-form> -->
-                  <!-- <v-col cols="12">
-                    <v-text-field
-                      :rules="[rules.required, rules.email]"
-                      label="輸入E-mail"
-                      v-model="editedItem.email"
-                      name="email"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12" v-if="editedIndex === -1">
-                    <v-text-field
-                      label="登入代號"
-                      v-model="editedItem.alias"
-                      :rules="[rules.required]"
-                      name="alias"
-                    ></v-text-field>
-                  </v-col>-->
-                  <v-col cols="12">
-                    <v-text-field
-                      label="姓名"
-                      v-model="editedItem.name"
-                      :rules="[rules.required]"
-                      name="name"
-                    ></v-text-field>
-                  </v-col>
-                  <v-col cols="12">
-                    <v-select :items="department" v-model="editedItem.department" label="單位名稱"></v-select>
-                  </v-col>
-                  <v-col cols="12">
-                    <v-text-field label="連絡電話" v-model="editedItem.telphone" name="telphone"></v-text-field>
-                  </v-col>
-                  <v-col cols="12" v-if="editedIndex !== -1">
-                    <v-select
-                      :items="roles"
-                      v-model="editedItem.role"
-                      :menu-props="{ maxHeight: '400' }"
-                      label="權限"
-                      multiple
-                      persistent-hint
-                    ></v-select>
-                  </v-col>
-                  <!-- </v-form> -->
+                  <v-form>
+                    <v-col cols="12">
+                      <v-text-field
+                        :rules="[rules.required, rules.email]"
+                        label="輸入E-mail"
+                        v-model="editedItem.email"
+                        name="email"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field
+                        label="輸入姓名"
+                        v-model="editedItem.name"
+                        :rules="[rules.required]"
+                        name="name"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" v-if="editedIndex === -1">
+                      <v-text-field
+                        label="登入代號"
+                        v-model="editedItem.alias"
+                        :rules="[rules.required]"
+                        name="alias"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-select :items="department" v-model="editedItem.department" label="單位名稱"></v-select>
+                    </v-col>
+                    <v-col cols="12">
+                      <v-text-field label="連絡電話" v-model="editedItem.telphone" name="telphone"></v-text-field>
+                    </v-col>
+                    <v-col cols="12" v-if="editedIndex === -1">
+                      <v-text-field
+                        v-model="password"
+                        :append-icon="show1 ? 'mdi-eye' : 'mdi-eye-off'"
+                        :rules="[rules.required, rules.min]"
+                        :type="show1 ? 'text' : 'password'"
+                        name="password"
+                        label="請輸入密碼"
+                        hint="最少需要8個字元"
+                        counter
+                        @click:append="show1 = !show1"
+                      ></v-text-field>
+                    </v-col>
+                    <v-col cols="12" v-if="editedIndex !== -1">
+                      <v-select
+                        :items="roles"
+                        v-model="editedItem.role"
+                        :menu-props="{ maxHeight: '400' }"
+                        label="權限"
+                        multiple
+                        persistent-hint
+                      ></v-select>
+                    </v-col>
+                  </v-form>
                 </v-row>
               </v-container>
             </v-card-text>
@@ -132,13 +152,15 @@
 </template>
 
 <script>
-// import slugify from "slugify";
+import slugify from "slugify";
 import moment from "moment";
 import { dbFirestore, dbAuth, dbFunctions } from "@/fb";
-import {powerRouter, copyPowerRouter } from "../router";
+import { powerRouter } from "../router";
 
 export default {
   data: () => ({
+    alertResult: "",
+    alert: false,
     dialog: false,
     headers: [
       // sortable: false,
@@ -149,14 +171,14 @@ export default {
       { text: "單位部門", value: "department" },
       { text: "連絡電話", value: "telphone" },
       { text: "使用權限", value: "role" },
-      { text: "修改時間", value: "createAt" },
+      { text: "建立時間", value: "createAt" },
       { text: "操作", value: "action", sortable: false }
     ],
     desserts: [],
     roles: [], //所有的權限
     editedIndex: -1,
 
-    department: [], //所有單位
+    department: [], //單位
     slug: "",
     show1: false,
     show2: false,
@@ -164,7 +186,6 @@ export default {
     repassword: "",
 
     editedItem: {
-      slug: "",
       alias: "",
       authId: null,
       email: "",
@@ -218,10 +239,7 @@ export default {
 
   created() {
     //讀取所有的權限
-    // console.log(copyPowerRouter);
-    const username = this.$store.getters.user.name
-    const pwrRouter = username === '000614' ? copyPowerRouter : powerRouter
-    pwrRouter[0].children.forEach(item => {
+    powerRouter[0].children.forEach(item => {
       // console.log(item.meta)
       if (item.meta !== undefined) {
         this.roles.push(item.meta.role);
@@ -229,23 +247,7 @@ export default {
     });
 
     this.initialize();
-  },
-  mounted() {
-    let vm = this;
-    dbFirestore
-      .collection("SettingData")
-      .doc("Department") //單位
-      .get()
-      .then(doc => {
-        let temp = doc.data().depart;
-        temp
-          .sort(function(a, b) {
-            return a.order - b.order; //小的排在前面，注意字串排序，用減號 不是 <
-          })
-          .forEach(item => {
-            this.department.push(item.title);
-          });
-      });
+    // console.log(this.$store.state.device);
   },
 
   methods: {
@@ -259,12 +261,11 @@ export default {
             // console.log(doc.data().createAt,typeof(doc.data().createAt))
             let data = {
               slug: doc.id,
-              authId: doc.data().authId,
               alias: doc.data().alias,
               email: doc.data().email,
               name: doc.data().name,
               department: doc.data().department,
-              telphone: doc.data().telphone || "",
+              telphone: doc.data().telphone,
               memo: doc.data().memo,
               role: doc.data().role,
               state: doc.data().state,
@@ -288,12 +289,8 @@ export default {
 
     deleteItem(item) {
       const index = this.desserts.indexOf(item);
-      confirm("確定要刪除這筆資料嗎？") && this.desserts.splice(index, 1);
-      // console.log(item)
-      dbFirestore
-        .collection("MyAppUsers")
-        .doc(item.slug)
-        .delete();
+      confirm("Are you sure you want to delete this item?") &&
+        this.desserts.splice(index, 1);
     },
 
     close() {
@@ -305,34 +302,87 @@ export default {
     },
 
     save() {
-      let vm = this;
       if (this.editedIndex > -1) {
         //=============修改================
-        let newDate = new Date();
-        this.editedItem.createAt = moment(newDate).format("YYYY-MM-DD"); //讓前台顯示字串日期
-        //將資料寫入前台陣列
         Object.assign(this.desserts[this.editedIndex], this.editedItem);
-
-        // 將資料寫入後台資料庫
-        this.editedItem.createAt = newDate; //後台寫入物件日期
-        // this.editedItem.alias = this.editedItem.slug; //登入代號不能變更
-        dbFirestore
-          .collection("MyAppUsers")
-          .doc(this.editedItem.slug)
-          .set(this.editedItem)
-          .then(() => {
-            console.log("Document successfully Update!");
-          })
-          .catch(function(error) {
-            /* eslint-disable no-console */
-            console.error("Error Update document: ", error);
-            /* eslint-enable no-console */
-          });
       } else {
-        //不要從這邊新增，新增因需email認證，再修改權限即可
-        // this.desserts.push(this.editedItem);
+        //===========新增===================
+        //處理註冊
+        let vm = this;
+        let user = vm.editedItem;
+
+        this.slug = slugify(this.editedItem.alias, {
+          replacement: "-",
+          remove: /[$*_+~.()'"!\-:@]/g,
+          lower: true
+        });
+        dbFirestore //先檢查登入代號是否存在
+          .collection("MyAppUsers")
+          .doc(this.slug)
+          .get()
+          .then(doc => {
+            if (doc.exists) {
+              vm.ShowAlert("這個登入代號已經存在！");
+            } else {
+              // console.log(doc);
+              //建立帳號
+              dbAuth
+                .createUserWithEmailAndPassword(user.email, vm.password)
+                .then(resUser => {
+                  console.log(resUser);
+                  //================新增=================
+                  let newDate = new Date();
+                  user.authId = resUser.user.uid;
+                  user.createAt = newDate; //後台寫入物件日期
+                  console.log(user);
+                  dbFirestore
+                    .collection("MyAppUsers")
+                    .doc(vm.slug)
+                    .set(user)
+                    .then(() => {
+                      console.log("Document successfully add!");
+                    })
+                    .catch(error => {
+                      console.log("error", error);
+                    });
+                }) //註冊失敗，顯示錯誤訊息經過三秒後關閉警示
+                .catch(function(error) {
+                  // console.log(error)
+                  // Handle Errors here.
+                  var errorCode = error.code;
+                  // var errorMessage = error.message;
+                  if (errorCode == "auth/weak-password") {
+                    errorCode = "這個密碼太簡單！";
+                  }
+                  if (errorCode == "auth/email-already-in-use") {
+                    errorCode = "這個 email 帳號已經被使用過了！";
+                  }
+                  if (errorCode == "auth/invalid-email") {
+                    errorCode = "email 不符規定！";
+                  }
+                  if (errorCode == "auth/operation-not-allowed") {
+                    errorCode = "未啟用「電子郵件/密碼」登入方式！";
+                  }
+                  //alert 三秒後警示消失
+                  vm.ShowAlert(errorCode);
+                });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+
+        this.desserts.push(this.editedItem);
       }
       this.close();
+    },
+    ShowAlert(alertMsg, showtime = 3000) {
+      this.alertResult = alertMsg;
+      this.alert = true;
+      setTimeout(() => {
+        this.alertResult = "";
+        this.alert = false;
+      }, showtime);
     }
   }
 };

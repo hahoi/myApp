@@ -21,33 +21,43 @@
                 </v-tooltip>
               </v-toolbar>
               <v-card-text>
-                <v-form>
+                <v-form ref="form" v-model="valid" lazy-validation>
                   <!-- <v-text-field label="Login" name="login" prepend-icon="person" type="text" /> -->
                   <v-text-field
                     :rules="[rules.required, rules.email]"
                     label="輸入E-mail"
                     v-model="user.email"
                     name="email"
+                    required
                   ></v-text-field>
                   <v-text-field
                     label="輸入姓名"
                     v-model="user.name"
                     :rules="[rules.required]"
                     name="name"
+                    required
                   ></v-text-field>
                   <v-text-field
                     label="登入代號"
                     v-model="user.alias"
                     :rules="[rules.required]"
                     name="alias"
+                    required
                   ></v-text-field>
-                  <v-select :items="department" v-model="user.department" label="單位名稱"></v-select>
-                  <!-- <v-text-field
-                    label="單位名稱"
+                  <v-select
+                    :items="department"
                     v-model="user.department"
                     :rules="[rules.required]"
-                    name="department"
-                  ></v-text-field>-->
+                    label="單位名稱"
+                    required
+                  ></v-select>
+                  <v-text-field
+                    label="連絡電話"
+                    v-model="user.telphone"
+                    :rules="[rules.required]"
+                    name="telphone"
+                    required
+                  ></v-text-field>
 
                   <v-text-field
                     v-model="password"
@@ -59,6 +69,7 @@
                     hint="最少需要8個字元"
                     counter
                     @click:append="show1 = !show1"
+                    required
                   ></v-text-field>
                   <v-text-field
                     v-model="repassword"
@@ -70,11 +81,12 @@
                     hint="最少需要8個字元"
                     counter
                     @click:append="show2 = !show2"
+                    required
                   ></v-text-field>
                 </v-form>
               </v-card-text>
               <v-card-actions>
-                <v-btn @click="sendEmailVerification">重新發送驗證郵件</v-btn>
+                <v-btn color="success" @click="sendEmailVerification">重新發送驗證郵件</v-btn>
                 <v-spacer />
                 <v-btn color="primary" @click="signup_handle">註冊</v-btn>
               </v-card-actions>
@@ -117,14 +129,15 @@ export default {
   data() {
     return {
       // EmailVerificationDialog: false,
+      valid: true,
       alertResult: "",
       alert: false,
       show1: false,
       show2: false,
       department: [], //單位
       slug: "",
-        password: "00000000",
-        repassword: "00000000",
+      password: "00000000",
+      repassword: "00000000",
       user: {
         //使用者資料
         authId: null,
@@ -132,7 +145,8 @@ export default {
         name: "謝孟良",
         alias: "000614",
         department: "研考處",
-        role: null, //角色
+        telphone: "",
+        role: [], //角色權限
         state: "",
         memo: ""
       },
@@ -148,7 +162,7 @@ export default {
           (v || "").match(
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*(_|[^\w])).+$/
           ) || "密碼必須包含大寫英文、數字、特殊字元",
-        passwordMath: v => v === this.user.password || "密碼必須相同"
+        passwordMath: v => v === this.password || "密碼必須相同"
         // emailMatch: () => "The email and password you entered don't match"
       }
     };
@@ -179,6 +193,10 @@ export default {
       //處理註冊
       let vm = this;
 
+      if (!this.valid) {
+        vm.ShowAlert("輸入資料仍有錯誤！");
+        return false
+      }
       this.slug = slugify(this.user.alias, {
         replacement: "-",
         remove: /[$*_+~.()'"!\-:@]/g,
@@ -197,9 +215,9 @@ export default {
             dbAuth
               .createUserWithEmailAndPassword(vm.user.email, vm.password)
               .then(resUser => {
-                console.log(resUser);
+                // console.log(resUser);
                 //註冊成功，送出回傳認證，顯示提示視窗
-                // dbAuth.currentUser.sendEmailVerification();
+                dbAuth.currentUser.sendEmailVerification();
                 vm.$confirm("請到註冊的郵件信箱收信，<br>點擊連結回傳確認。", {
                   title: "請注意",
                   buttonFalseText: "",
@@ -219,9 +237,8 @@ export default {
                     console.log("Document successfully add!");
                   })
                   .catch(error => {
-                    console.log("error")
-                    console.log(error)
-                  })
+                    console.log(error);
+                  });
               }) //註冊失敗，顯示錯誤訊息經過三秒後關閉警示
               .catch(function(error) {
                 // console.log(error)
@@ -293,13 +310,14 @@ export default {
       });
     },
     logout() {
-      this.$store.dispatch("logout").then(() => {
+      this.$store
+        .dispatch("logout")
+        .then(() => {
           this.$router.push({ path: "/login" });
         })
         .catch(err => {
           throw new Error(error);
         });
-
     },
     ShowAlert(alertMsg, showtime = 3000) {
       this.alertResult = alertMsg;

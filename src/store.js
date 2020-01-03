@@ -4,6 +4,7 @@ import Vuex from 'vuex'
 Vue.use(Vuex)
 
 const state = {
+  device: "",
   userId: sessionStorage.getItem('uid'),
   user:null,
   loading: true,  // this.$store.state.loading
@@ -12,6 +13,7 @@ const state = {
   newRouter: [],
 }
 const getters = {
+  device: state => state.device,
   userId: state => state.userId,
   user: state => state.user,
   loading: state => state.loading,
@@ -19,6 +21,12 @@ const getters = {
   newRouter: state => state.newRouter,
 }
 const mutations = {
+  Update_Loading(state,loading){
+    state.loading = loading
+  },
+  storeDevice(state,device){
+    state.device = device
+  },
   storeUserId(state, userId) {
     state.userId = userId;
   },

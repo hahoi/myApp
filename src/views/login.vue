@@ -133,11 +133,15 @@ export default {
                   };
                 });
                 //登入成功後將使用者資料存入vuex store
+                console.log(vm.User)
                 vm.$store
                   .dispatch("loginSet", vm.User)
-                  .then(() => {
+                  .then(res => {
+                    // console.log(res)
                     // ============跳轉到指定頁面============
-                    vm.$router.push({ path: "/" });
+                    vm.$router.push({ path: "/" }).catch(err => {
+                      // console.log(`這裡會發生一些問題：${err}網路上查還無法解決並無大礙，捕捉錯誤後不用顯示`)
+                    });
                   })
                   .catch(() => {
                     console.log("loginSet error");

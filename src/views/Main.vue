@@ -18,6 +18,26 @@
     <v-app-bar app color="indigo" dark>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
       <v-toolbar-title>Application</v-toolbar-title>
+      <v-divider class="mx-4" inset vertical></v-divider>
+      <v-spacer></v-spacer>
+      <v-menu bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn icon v-on="on">
+            <v-icon>mdi-dots-vertical</v-icon>
+          </v-btn>
+        </template>
+
+        <v-list class="text-left">
+          <v-list-item>
+            <v-list-item-title>
+              <span>{{username}}</span>
+            </v-list-item-title>
+          </v-list-item>
+          <v-list-item @click="logout()">
+            <v-list-item-title>退出</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </v-app-bar>
 
     <main>
@@ -32,7 +52,8 @@
 </template>
 
 <script>
-import store from "../store";
+// import store from "../store";
+import { powerRouter } from "../router";
 export default {
   props: {
     source: String
@@ -41,9 +62,35 @@ export default {
   data: () => ({
     drawer: null
   }),
+  mounted() {
+    if(powerRouter[0].children.length == 0){
+            this.$confirm(
+              "功能權限尚未設定，請電洽系統管理員！",
+              { title: "警告", buttonFalseText: "", buttonTrueText: "好" }
+            );
+
+    }
+  },
   computed: {
     newrouter() {
-      return store.getters.newRouter;
+      return this.$store.getters.newRouter;
+    },
+    username() {
+      if (this.$store.getters.user !== null)
+        return this.$store.getters.user.name;
+      else return "";
+    }
+  },
+  methods: {
+    logout() {
+      this.$store
+        .dispatch("logout")
+        .then(() => {
+          this.$router.push({ path: "/login" });
+        })
+        .catch(err => {
+          throw new Error(error);
+        });
     }
   }
 };
