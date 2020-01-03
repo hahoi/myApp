@@ -129,7 +129,7 @@ export default {
   data() {
     return {
       // EmailVerificationDialog: false,
-      valid: true,
+      valid: false,
       alertResult: "",
       alert: false,
       show1: false,
@@ -140,7 +140,7 @@ export default {
       repassword: "00000000",
       user: {
         //使用者資料
-        authId: null,
+        authId: "",
         email: "a000614@oa.pthg.gov.tw",
         name: "謝孟良",
         alias: "000614",
@@ -193,78 +193,83 @@ export default {
       //處理註冊
       let vm = this;
 
-      if (!this.valid) {
+      if (!this.$refs.form.validate()) { //有錯
+        console.log(this.$refs.form.validate())
         vm.ShowAlert("輸入資料仍有錯誤！");
-        return false
-      }
-      this.slug = slugify(this.user.alias, {
-        replacement: "-",
-        remove: /[$*_+~.()'"!\-:@]/g,
-        lower: true
-      });
-      dbFirestore //先檢查登入代號是否存在
-        .collection("MyAppUsers")
-        .doc(this.slug)
-        .get()
-        .then(doc => {
-          if (doc.exists) {
-            vm.ShowAlert("這個登入代號已經存在！");
-          } else {
-            // console.log(doc);
-            //建立帳號
-            dbAuth
-              .createUserWithEmailAndPassword(vm.user.email, vm.password)
-              .then(resUser => {
-                // console.log(resUser);
-                //註冊成功，送出回傳認證，顯示提示視窗
-                dbAuth.currentUser.sendEmailVerification();
-                vm.$confirm("請到註冊的郵件信箱收信，<br>點擊連結回傳確認。", {
-                  title: "請注意",
-                  buttonFalseText: "",
-                  buttonTrueText: "知道了"
-                });
-
-                //================新增=================
-                let newDate = new Date();
-                vm.user.authId = resUser.user.uid;
-                vm.user.createAt = newDate; //後台寫入物件日期
-                console.log(vm.user);
-                dbFirestore
-                  .collection("MyAppUsers")
-                  .doc(vm.slug)
-                  .set(vm.user)
-                  .then(() => {
-                    console.log("Document successfully add!");
-                  })
-                  .catch(error => {
-                    console.log(error);
-                  });
-              }) //註冊失敗，顯示錯誤訊息經過三秒後關閉警示
-              .catch(function(error) {
-                // console.log(error)
-                // Handle Errors here.
-                var errorCode = error.code;
-                // var errorMessage = error.message;
-                if (errorCode == "auth/weak-password") {
-                  errorCode = "這個密碼太簡單！";
-                }
-                if (errorCode == "auth/email-already-in-use") {
-                  errorCode = "這個 email 帳號已經被使用過了！";
-                }
-                if (errorCode == "auth/invalid-email") {
-                  errorCode = "email 不符規定！";
-                }
-                if (errorCode == "auth/operation-not-allowed") {
-                  errorCode = "未啟用「電子郵件/密碼」登入方式！";
-                }
-                //alert 三秒後警示消失
-                vm.ShowAlert(errorCode);
-              });
-          }
-        })
-        .catch(error => {
-          console.log(error);
+        return false;
+      } else {
+        this.slug = slugify(this.user.alias, {
+          replacement: "-",
+          remove: /[$*_+~.()'"!\-:@]/g,
+          lower: true
         });
+        dbFirestore //先檢查登入代號是否存在
+          .collection("MyAppUsers")
+          .doc(this.slug)
+          .get()
+          .then(doc => {
+            if (doc.exists) {
+              vm.ShowAlert("這個登入代號已經存在！");
+            } else {
+              // console.log(doc);
+              //建立帳號
+              dbAuth
+                .createUserWithEmailAndPassword(vm.user.email, vm.password)
+                .then(resUser => {
+                  // console.log(resUser);
+                  //註冊成功，送出回傳認證，顯示提示視窗
+                  dbAuth.currentUser.sendEmailVerification();
+                  vm.$confirm(
+                    "請到註冊的郵件信箱收信，<br>點擊連結回傳確認。",
+                    {
+                      title: "請注意",
+                      buttonFalseText: "",
+                      buttonTrueText: "知道了"
+                    }
+                  );
+
+                  //================新增=================
+                  let newDate = new Date();
+                  vm.user.authId = resUser.user.uid;
+                  vm.user.createAt = newDate; //後台寫入物件日期
+                  console.log(vm.user);
+                  dbFirestore
+                    .collection("MyAppUsers")
+                    .doc(vm.slug)
+                    .set(vm.user)
+                    .then(() => {
+                      console.log("Document successfully add!");
+                    })
+                    .catch(error => {
+                      console.log(error);
+                    });
+                }) //註冊失敗，顯示錯誤訊息經過三秒後關閉警示
+                .catch(function(error) {
+                  // console.log(error)
+                  // Handle Errors here.
+                  var errorCode = error.code;
+                  // var errorMessage = error.message;
+                  if (errorCode == "auth/weak-password") {
+                    errorCode = "這個密碼太簡單！";
+                  }
+                  if (errorCode == "auth/email-already-in-use") {
+                    errorCode = "這個 email 帳號已經被使用過了！";
+                  }
+                  if (errorCode == "auth/invalid-email") {
+                    errorCode = "email 不符規定！";
+                  }
+                  if (errorCode == "auth/operation-not-allowed") {
+                    errorCode = "未啟用「電子郵件/密碼」登入方式！";
+                  }
+                  //alert 三秒後警示消失
+                  vm.ShowAlert(errorCode);
+                });
+            }
+          })
+          .catch(error => {
+            console.log(error);
+          });
+      }
     },
 
     sendEmailVerification() {

@@ -133,7 +133,7 @@ export default {
                   };
                 });
                 //登入成功後將使用者資料存入vuex store
-                console.log(vm.User)
+                // console.log(vm.User)
                 vm.$store
                   .dispatch("loginSet", vm.User)
                   .then(res => {

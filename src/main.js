@@ -30,7 +30,7 @@ router.beforeEach((to, from, next) => {
           .where("authId", "==", store.getters.userId)
           .get()
           .then(querySnapshot => {
-            let user = null
+            let user = {}
             querySnapshot.forEach(doc => {
               user = {
                 authId: doc.data().authId,
