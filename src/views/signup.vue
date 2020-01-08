@@ -194,7 +194,7 @@ export default {
       let vm = this;
 
       if (!this.$refs.form.validate()) { //有錯
-        console.log(this.$refs.form.validate())
+        // console.log(this.$refs.form.validate())
         vm.ShowAlert("輸入資料仍有錯誤！");
         return false;
       } else {

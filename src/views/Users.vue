@@ -108,13 +108,13 @@
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
-            <v-list-item-title @click="editItem(item)">
+            <v-list-item-title @click="sendPasswordResetEmailFun(item)">
               <v-icon small class="mr-2">mdi-pencil-outline</v-icon>發送重設密碼電子郵件
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
-            <v-list-item-title @click="editItem(item)">
-              <v-icon small class="mr-2">mdi-pencil-outline</v-icon>重新進行email驗證
+            <v-list-item-title @click="ForcePasswordChangeAndAuthentication(item)">
+              <v-icon small class="mr-2">mdi-pencil-outline</v-icon>強制變更密碼及驗證
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
@@ -135,11 +135,12 @@
 // import slugify from "slugify";
 import moment from "moment";
 import { dbFirestore, dbAuth, dbFunctions } from "@/fb";
-import {powerRouter, copyPowerRouter } from "../router";
+import { powerRouter, copyPowerRouter } from "../router";
 
 export default {
   data: () => ({
     dialog: false,
+    ForcePasswordChangeDialog: false,
     headers: [
       // sortable: false,
       // align: "left",
@@ -218,11 +219,9 @@ export default {
 
   created() {
     //讀取所有的權限
-    // console.log(copyPowerRouter);
-    const username = this.$store.getters.user.name
-    const pwrRouter = username === '000614' ? copyPowerRouter : powerRouter
+    const useralias = this.$store.getters.user.alias;
+    const pwrRouter = useralias === "000614" ? copyPowerRouter : powerRouter;
     pwrRouter[0].children.forEach(item => {
-      // console.log(item.meta)
       if (item.meta !== undefined) {
         this.roles.push(item.meta.role);
       }
@@ -231,7 +230,6 @@ export default {
     this.initialize();
   },
   mounted() {
-    let vm = this;
     dbFirestore
       .collection("SettingData")
       .doc("Department") //單位
@@ -288,12 +286,21 @@ export default {
 
     deleteItem(item) {
       const index = this.desserts.indexOf(item);
+      //刪除前端user表格資料
       confirm("確定要刪除這筆資料嗎？") && this.desserts.splice(index, 1);
       // console.log(item)
+      //刪除cloud firestore 資料
       dbFirestore
         .collection("MyAppUsers")
         .doc(item.slug)
         .delete();
+      //刪除Authentication email資料
+      // console.log(item.authId)
+      const AdminDeleteUser = dbFunctions.httpsCallable("AdminDeleteUser");
+      AdminDeleteUser({ uid: item.authId }).then(result => {
+        // console.log(result);
+        return result.data;
+      });
     },
 
     close() {
@@ -305,7 +312,7 @@ export default {
     },
 
     save() {
-      let vm = this;
+      // let vm = this;
       if (this.editedIndex > -1) {
         //=============修改================
         let newDate = new Date();
@@ -333,6 +340,55 @@ export default {
         // this.desserts.push(this.editedItem);
       }
       this.close();
+    },
+
+    sendPasswordResetEmailFun(item) {
+      const emailAddress = item.email;
+      dbAuth
+        .sendPasswordResetEmail(emailAddress)
+        .then(function() {
+          // Email sent.
+        })
+        .catch(function(error) {
+          // An error happened.
+        });
+    },
+
+    ForcePasswordChangeAndAuthentication(item) {
+      this.$dialog
+        .prompt({
+          text: "密碼空白時，強制完成email認證。",
+          title: "請輸入變更的密碼"
+        })
+        .then(resPassword => {
+          let Udata = {};
+          if (resPassword !== undefined) {
+            if (resPassword.length < 8) {
+              this.$dialog.notify.info("密碼長度至少需8個字元以上！");
+            } else {
+              Udata = {
+                uid: item.authId,
+                emailVerified: true,
+                password: resPassword
+                // email: item.email,
+                // phoneNumber: '+11234567890',
+                // displayName: "Jane Doe"
+                // photoURL: 'http://www.example.com/12345678/photo.png',
+                // disabled: true
+              };
+            }
+          } else {
+            Udata = {
+              uid: item.authId,
+              emailVerified: true
+            };
+          }
+          const AdminUpdateUser = dbFunctions.httpsCallable("AdminUpdateUser");
+          AdminUpdateUser(Udata).then(result => {
+            console.log(result.data);
+            // if (typeof result.data == "string") alert(result.data);
+          });
+        });
     }
   }
 };

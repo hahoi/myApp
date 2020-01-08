@@ -93,7 +93,7 @@ export default {
         return r;
     },
 
-    //  一維陣列 => 樹狀  ========//問題 無父層的無法顯示
+    //  一維陣列 => 樹狀  ========//問題 無父層的無法顯示，可能是pid沒有設定正確
     arrayToJson(data) {
         let tree = data.filter((father) => {       //循环所有项
             let branchArr = data.filter((child) => {
@@ -156,12 +156,12 @@ export default {
     render(treeJson) {
         if (!Array.isArray(treeJson) || treeJson.length <= 0) { return "" }
         let str = "<ul>"
-        treeJson.forEach( item => {
-            let type = (Array.isArray(item.children) && item.children.length > 0) ? "dir":"file"
-            str += "<li>" + this.RemoveHTML(item.title) +type
+        treeJson.forEach(item => {
+            let type = (Array.isArray(item.children) && item.children.length > 0) ? "dir" : "file"
+            str += "<li>" + this.RemoveHTML(item.title) + type
             if (Array.isArray(item.children) && item.children.length > 0) {
                 type = "dir"
-                str += this.render(item.children) 
+                str += this.render(item.children)
             }
             str += "</li>"
         })
@@ -170,7 +170,127 @@ export default {
     },
 
 
-    RemoveHTML( strText ) {
+    /*================= 樹形結構數據處理 ===========================*/
+
+    //array to tree
+    getTree(data = [], sid, pid = null) {
+        const children = [];
+        for (const i in data) {
+            const node = data[i];
+            if (((!pid && !node.pid) || node.pid === pid) && node.id !== sid) {
+                // key, value, label 這裡是添加的属性。若有需求，可任意添加
+                children.push({
+                    key: node.id,
+                    value: node.id + '',
+                    label: node.name,
+                    children: this.getTree(data, sid, node.id),
+                    ...node
+                });
+            }
+        }
+        return children.length ? children : undefined;
+    },
+
+    // let tree =getTree(data)
+    // console.log(tree)
+
+    // 获取所有父级
+    getTreeParents(data = [], node = {}) {
+        let parent;
+        let cid = node.id; //子级id
+        const parents = [];
+        do {
+            for (const v of data) {
+                if (v.id === cid) {
+                    parent = v; // 子级数据
+                }
+            }
+            if (parent && parent.pid) {
+                cid = parent.pid; // 父级id
+                for (const v of data) {
+                    if (v.id === cid) {
+                        parents.push(v); // 父级数据
+                    }
+                }
+            }
+        }
+        while (parent && parent.pid);
+        return parents;
+    },
+
+
+    // 获取所有子级
+    getTreeAllChildren(data = [], node = {}) {
+        const children = [];
+        for (const v of data) {
+            if ((v.pid === node.id)) {
+                children.push(v); // node的直属父级
+                const subs = this.getTreeAllChildren(data, v);
+                if (subs) {
+                    children.push(...subs);
+                }
+            }
+        }
+        return children;
+    },
+
+    //陣列合併，剔除重複的值
+    my_unique(a) {
+        var a = a.concat();//使用concat()再複製一份陣列，避免影響原陣列
+        for (var i = 0; i < a.length; ++i) {
+            for (var j = i + 1; j < a.length; ++j) {
+                if (a[i] === a[j])
+                    a.splice(j, 1);
+            }
+        }
+
+        return a;
+    },
+    // var arr1=["a","b"];
+    // var arr2=["b","c"];
+    // var arr3 = my_unique(arr1.concat(arr2));//得到["a","b","c"]
+
+    // 使用範例
+    // let node = {
+    // 	id: 2,
+    // 	name: '哥哥',
+    // 	pid: 1}
+
+    // let array1 = getTreeParents(data,node)
+    // let array2 = getTreeAllChildren(data,node)
+    // let array3=my_unique(array1.concat(array2).concat(node))
+    //將此節點的父级、子级、自己组合到一起，就是我们想要的结果。
+    // let array4 = [...array1,node,...array2]
+    // console.log(array4)
+    // console.log(getTree(array4))
+
+    //列出節點的路徑，這邊是用name當路徑名稱
+    parsePath(tree) {
+        var result = []
+        _search(tree, [])
+        return result[0] //這裡要注意
+
+        function _search(nodes, path) {
+            if (!nodes || nodes.length <= 0) {
+                return result.push(path.slice())
+            }
+
+            for (let i = 0; i < nodes.length; i++) {
+                let node = nodes[i]
+                path.push(node.name) // 用name當路徑名稱
+                _search(node.children, path)
+                path.pop()
+            }
+        }
+    },
+
+    // let array5 = parsePath(getTree(array4))
+    // console.log(array5);
+    // console.log(array5.join("/"));
+
+
+
+    RemoveHTML(strText) {
         const regEx = /<[^>]*>/g;
         return strText.replace(regEx, "");
     },

@@ -19,22 +19,28 @@ const adminApp = admin.initializeApp();
 //   });
 
 
-exports.addAdminRole_1 = functions.https.onCall((data, context) => {
-    // get user and add admin custom claim
-    return adminApp.auth().getUserByEmail(data.email).then(user => {
-      return adminApp.auth().setCustomUserClaims(user.uid, {
-        admin: true
-      })
-    }).then(() => {
-      return {
-        message: `Success! ${data.email} has been made an admin.`
-      }
-    }).catch(err => {
-      return err;
+exports.AdminDeleteUser = functions.https.onCall((data) => {
+  return adminApp.auth().deleteUser(data.uid)
+    .then(function () {
+      return 'Successfully deleted user'
+    })
+    .catch(function (error) {
+      return 'Error deleting user:' + error
     });
-  });
-  
-  
+});
+
+
+exports.AdminUpdateUser = functions.https.onCall((data) => {
+  return adminApp.auth().updateUser(data.uid, data)
+    .then(function (res) {
+      return res
+    })
+    .catch(function (error) {
+      return 'Error :' + error
+    });
+});
+
+
 //   exports.getUserByEmail = functions.https.onCall((data, context) => {
 //     // get user and add admin custom claim
 //     return adminApp.auth().getUserByEmail(data.email).then(user => {
@@ -43,7 +49,7 @@ exports.addAdminRole_1 = functions.https.onCall((data, context) => {
 //         return err;
 //     })
 //   })
-  
+
 //     exports.listUsers = functions.https.onCall((data, context) => {
 //       return adminApp.auth().listUsers().then(listUsersResult => {
 //         let users = []
@@ -55,4 +61,3 @@ exports.addAdminRole_1 = functions.https.onCall((data, context) => {
 //           return err;
 //       }) 
 //     }) 
-  
