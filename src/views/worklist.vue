@@ -2,11 +2,14 @@
   <div class="tree">
     <v-container>
       <v-row>
-        <v-col cols="6">
+        <v-col cols="12" sm="12" md="6" class="py-0">
           <v-text-field label="關鍵字搜尋..." v-model="searchword"></v-text-field>
         </v-col>
-        <v-col cols="1">
-          <v-btn color="info" @click="searchFun">搜尋</v-btn>
+        <v-col cols="6" sm="6" md="1" class="py-0">
+          <v-btn color="info"  @click="searchFun">搜尋</v-btn>
+        </v-col>
+        <v-col cols="6" sm="6" md="2" class="py-0">
+          <v-btn color="orange" @click="nearreported">顯示近期填報</v-btn>
         </v-col>
       </v-row>
     </v-container>
@@ -20,19 +23,25 @@
           hide-overlay
           transition="dialog-right-transition"
         >
-          <v-card>
-            <v-toolbar dark color="primary">
-              <v-btn icon dark text class="mx-2" @click="workDetailDialog = false">
-                <v-icon>mdi-backspace</v-icon>
-                <span class="title">退回</span>
-              </v-btn>
-              <!-- <v-toolbar-title>退回</v-toolbar-title> -->
-              <v-spacer></v-spacer>
-              <v-btn icon dark text class="mx-2" @click="workDetailDialog = false">
-                <v-icon>mdi-content-save-outline</v-icon>
-                <span class="title">儲存</span>
-              </v-btn>
-            </v-toolbar>dfgdsgdsfgsdf
+          <v-toolbar dark color="primary">
+            <v-btn icon dark text class="mx-2" @click="workDetailDialog = false">
+              <v-icon>mdi-backspace</v-icon>
+              <span class="title">退回</span>
+            </v-btn>
+            <!-- <v-toolbar-title>退回</v-toolbar-title> -->
+            <v-spacer></v-spacer>
+            <v-btn icon dark text class="mx-2" @click="workDetailDialog = false">
+              <v-icon>mdi-content-save-outline</v-icon>
+              <span class="title">儲存</span>
+            </v-btn>
+          </v-toolbar>
+          <!-- max-width="550" tile="true" outlined -->
+          <v-card class="mx-auto" tile>
+            <v-card-text>
+              <!-- <v-divider></v-divider> -->
+              <!-- 子組件渲染 -->
+              <workdetail :propData="todo" @listenToChild="getChildData"></workdetail>
+            </v-card-text>
           </v-card>
         </v-dialog>
       </v-row>
@@ -45,43 +54,154 @@ import { dbFirestore } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
 
+import workdetail from "./workdetail.vue";
 export default {
-  name: "",
+  name: "worklist",
   data() {
     return {
       workDetailDialog: false,
       searchword: "",
-      treeData: []
+      treeData: [],
+      db_data: [],
+      todo: {},
+      ShowRecentReport: 10
     };
   },
-  components: {},
+  components: {
+    workdetail
+  },
   created() {
     this.$store.commit("setLoading", true);
-    dbFirestore
-      .collection("TLFMCD")
-      .get()
-      .then(querySnapshot => {
-        let db_data = [];
-        querySnapshot.forEach(doc => {
-          db_data.push(doc.data());
-        });
-        this.treeData = com_fun.arrayToJson(db_data);
-        this.$store.commit("setLoading", false);
-      });
+    this.readData();
+    // dbFirestore
+    //   .collection("TLFMCD")
+    //   .get()
+    //   .then(querySnapshot => {
+    //     let db_data = [];
+    //     querySnapshot.forEach(doc => {
+    //       db_data.push(doc.data());
+    //     });
+    //     this.treeData = com_fun.arrayToJson(db_data);
+    //     this.$store.commit("setLoading", false);
+    //   });
   },
   mounted() {},
   watch: {},
   computed: {},
   methods: {
+    nearreported() {
+    //   this.ShowRecentReport = prompt(
+    //     "請輸入幾天內填報才顯示：",
+    //     this.ShowRecentReport
+    //   );
+    //   this.handleData();
+
+      this.$dialog
+        .prompt({
+          text: "天數",
+          title: "請輸入幾天內填報才顯示："
+        })
+        .then(res => {
+          this.ShowRecentReport = res;
+          this.handleData();
+        });
+    },
+    readData() {
+      dbFirestore
+        .collection("TLFMCD")
+        .get()
+        .then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+            this.db_data.push(doc.data());
+          });
+          this.handleData();
+        });
+    },
+    handleData() {
+      let currentItem = this.db_data.map(doc => {
+        if (!doc.t_title) {
+          doc.t_title = doc.title; //第一次，先存起來
+        } else {
+          doc.title = doc.t_title; //還原
+        }
+        //   doc.expanded = true; //全部展開
+        //   if(doc.pid == this.$store.state.LevelOneID ) doc.expanded = false //預設只打開第一層
+
+        if (doc.enddate)
+          doc.t_enddate = moment(doc.enddate.toDate()).format("YYYY-MM-DD");
+        if (doc.startdate)
+          doc.t_startdate = moment(doc.startdate.toDate()).format("YYYY-MM-DD");
+
+        if (doc.process) {
+          doc.process.forEach(element => {
+            element.t_pgdate =
+              moment(element.pgdate.toDate()).format("YYYY-MM-DD") || "";
+          });
+          doc.process.sort(function(a, b) {
+            return moment(b.t_pgdate).diff(moment(a.t_pgdate)); //b - a > 0 天數大的排在前面
+          });
+        }
+        let days = "";
+        let remdayshow = "";
+        if (moment(doc.t_startdate) < moment() && doc.status != "完成") {
+          doc.remaindays = moment(moment(doc.t_enddate).diff(moment())).format(
+            "D"
+          );
+          days = moment(doc.t_enddate).diff(moment(), "day");
+          doc.remaindays = `<span class="red--text">${days}天</span>`;
+        } else {
+          doc.remaindays = "";
+        }
+
+        if (doc.status == "完成") {
+          //完成顯示綠色
+          doc.title = "<span class='green--text'>" + doc.title + "</span>";
+        }
+        if (doc.status == "不顯示" || doc.status == "停止") return {}; // 不顯示、停止，回傳空物件
+
+        if (days <= 0 && days !== "") {
+          //剩餘天數為負數，顯示為紅色
+          doc.title = "<span class='red--text'>" + doc.title + "</span>";
+        }
+        if (moment().isBefore(doc.t_startdate) || doc.t_startdate == "") {
+          //已設定開始日期，但時間未到
+          // if (vm.ShowAllitems) {
+          doc.title = "<span class='grey--text'>" + doc.title + "</span>";
+          // } else {
+          //   return {}; // 不顯示
+          // }
+        }
+
+        if (doc.process) {
+          if (doc.process.length > 0) {
+            //有填報的才顯示
+            // console.log(doc.process[0].t_pgdate,moment().diff(moment(doc.process[0].t_pgdate), "day"))
+            if (
+              moment().diff(moment(doc.process[0].t_pgdate), "day") <=
+              this.ShowRecentReport
+            ) {
+              // ?天以內填報的才顯示
+              doc.title = `${doc.title}-${doc.depart} 【<span class="blue--text">${doc.process[0].t_pgdate} - ${doc.process[0].pgdesc}</span>】`;
+            }
+          }
+        }
+
+        return doc;
+      });
+      // console.log(currentItem)
+      this.treeData = com_fun.arrayToJson(currentItem);
+      this.$store.commit("setLoading", false);
+    },
+
     searchFun() {
       this.$refs.tree1.searchNodes(this.searchword);
     },
+
     tpl(...args) {
       let { 0: node, 1: ctx, 2: parent, 3: index } = args;
       let titleClass = node.selected
         ? "node-title node-selected"
         : "node-title";
-      let vm = this;
       if (node.searched) titleClass += " node-searched";
       return (
         <span>
@@ -111,7 +231,9 @@ export default {
           />
         </span>
       );
-    }
+    },
+
+    getChildData() {}
   }
 };
 </script>
