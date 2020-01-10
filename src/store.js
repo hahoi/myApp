@@ -21,7 +21,7 @@ const getters = {
   newRouter: state => state.newRouter,
 }
 const mutations = {
-  Update_Loading(state,loading){
+  setLoading(state,loading){
     state.loading = loading
   },
   storeDevice(state,device){

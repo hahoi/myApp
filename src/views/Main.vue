@@ -7,10 +7,11 @@
             <v-list-item-action>
               <v-icon>{{ item.meta.icon }}</v-icon>
             </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>{{item.meta.title}}</v-list-item-title>
+            <v-list-item-content >
+              <v-list-item-title><span class="title">{{item.meta.title}}</span></v-list-item-title>
             </v-list-item-content>
           </v-list-item>
+          <v-divider dark class="my-3" v-if="item.meta.divider"></v-divider>
         </template>
       </v-list>
     </v-navigation-drawer>

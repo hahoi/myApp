@@ -14,18 +14,17 @@ export const powerRouter = [
     component: () => import('@/views/Main'),
     meta: { title: 'Main' },
     children: [
-
-      {
-        path: '/Users',
-        // name: 'Users',
-        component: () => import('@/views/Users'),
-        meta: { title: '使用者管理', role: '使用者管理', icon: "mdi-account" }
-      },
       {
         path: '/project',
         // name: 'project',
         component: () => import('@/views/project'),
         meta: { title: '專案管理', role: '專案管理', icon: "mdi-home" }
+      },
+      {
+        path: '/worklist',
+        // name: 'worklist',
+        component: () => import('@/views/worklist'),
+        meta: { title: '工項管理', role: '工項管理', icon: "mdi-home", divider: true }
       },
       {
         path: '/treeview',
@@ -43,8 +42,15 @@ export const powerRouter = [
         path: '/page2',
         // name: 'page2',
         component: () => import('@/views/page2'),
-        meta: { title: '第二頁', role: '第二頁', icon: "mdi-contact-mail" }
-      }
+        meta: { title: '第二頁', role: '第二頁', icon: "mdi-contact-mail"  , divider: true}
+      },
+
+      {
+        path: '/Users',
+        // name: 'Users',
+        component: () => import('@/views/Users'),
+        meta: { title: '使用者管理', role: '使用者管理', icon: "mdi-account" }
+      },
 
     ]
   }

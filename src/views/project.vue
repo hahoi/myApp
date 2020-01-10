@@ -1,21 +1,13 @@
 <template>
   <div class="tree">
     <v-container>
+      <!-- <v-row>
+        <v-overlay :opacity="0.5" z-index="1000" :value="alert">
+          <v-alert color="red" dark transition="scale-transition">存檔中請稍後...</v-alert>
+        </v-overlay>
+      </v-row>-->
       <v-row>
         <v-col cols="6">
-          <!-- <v-autocomplete
-            v-model="select"
-            :loading="loading"
-            :items="items"
-            :search-input.sync="search"
-            cache-items
-            class="mx-4"
-            flat
-            hide-no-data
-            hide-details
-            label="關鍵字搜尋..."
-            :value="searchword"
-          ></v-autocomplete>-->
           <v-text-field label="關鍵字搜尋..." v-model="searchword"></v-text-field>
         </v-col>
         <v-col cols="1">
@@ -23,9 +15,9 @@
         </v-col>
       </v-row>
     </v-container>
-    <!-- <div style="z-index:1;position:relative"> -->
-    <v-tree ref="tree1" :data="treeData" :tpl="tpl" :draggable="true" @drag-node-end="MyDrag" />
-    <!-- </div> -->
+      <img src="@/assets/loading.gif" height="40px" v-show="this.$store.state.loading"/>
+      <v-tree ref="tree1" :data="treeData" :tpl="tpl" :draggable="true" @drag-node-end="MyDrag" />
+      <v-btn color="info" @click="saveCurrentState" v-show="!this.$store.state.loading">儲存階層收合狀態</v-btn>
     <v-snackbar v-model="snackbar" :timeout="timeout">
       {{ databasemessage }}
       <v-btn dark text @click="snackbar = false">Close</v-btn>
@@ -40,30 +32,29 @@ export default {
   name: "project",
   data() {
     return {
-      loading: false,
-      items: [],
-      search: null,
-      select: null,
+      alert: false,
 
       snackbar: false,
       timeout: 2000,
       databasemessage: "",
+
       searchword: "",
-      treeData: [],
-      dbRecord: []
+      treeData: []
     };
   },
   components: {},
   created() {
-    let vm = this;
+    this.$store.commit("setLoading", true);
     dbFirestore
       .collection("TLFMCD")
       .get()
-      .then(function(querySnapshot) {
-        querySnapshot.forEach(function(doc) {
-          vm.dbRecord.push(doc.data());
+      .then(querySnapshot => {
+        let TLFM_data = [];
+        querySnapshot.forEach(doc => {
+          TLFM_data.push(doc.data());
         });
-        vm.treeData = com_fun.arrayToJson(vm.dbRecord);
+        this.treeData = com_fun.arrayToJson(TLFM_data);
+        this.$store.commit("setLoading", false);
       });
 
     //監聽資料庫變化
@@ -131,32 +122,30 @@ export default {
               // console.log(ctx.parent.getSelectedNodes())
               let tmp = node.title;
               node.title = prompt("請更改工作項目名稱：", node.title) || tmp;
-              // node.title = node.title ? node.title : ;
-              dbFirestore
-                .collection("TLFMCD")
-                .doc(node.id)
-                .update({ title: node.title })
-                .then(function() {
-                  /* eslint-disable no-console */
-                  console.log("Document successfully updated!");
-                  /* eslint-enable no-console */
-                })
-                .catch(function(error) {
-                  /* eslint-disable no-console */
-                  console.error("Error updating document: ", error);
-                  /* eslint-enable no-console */
-                });
+              if (node.title !== tmp) {
+                //按取消不會變更
+                dbFirestore
+                  .collection("TLFMCD")
+                  .doc(node.id)
+                  .update({ title: node.title })
+                  .then(function() {
+                    console.log("Document successfully updated!");
+                  })
+                  .catch(function(error) {
+                    console.error("Error updating document: ", error);
+                  });
+              }
             }}
           />
           <button
-            style="color:blue; background-color:pink"
+            style="color:blue; background-color:pink;border-radius:4px;"
             onClick={() => this.asyncAddNode(node)} //增加節點
           >
             +增加
           </button>
           &nbsp;&nbsp;
           <button
-            style="color:red; background-color:pink"
+            style="color:red; background-color:pink;border-radius:4px;"
             onClick={() => this.deleteNode(node, parent, index)} //刪除節點
           >
             -刪除
@@ -256,6 +245,7 @@ export default {
       // console.log("node-old-pid", Node.dragNode.pid);
       // console.log("node-new-pid", Node.targetNode.id);
       // console.log("node-new-pid-title", Node.targetNode.title);
+
       this.$confirm("你已經搬移了資料，確定要存檔嗎？", {
         color: "red",
         title: "警告"
@@ -266,6 +256,7 @@ export default {
             .doc(Node.dragNode.id)
             .update({ pid: Node.targetNode.id })
             .then(function() {
+              window.location.reload();
               // console.log("資料存檔完成！", Node.targetNode.title);
             })
             .catch(function(error) {
@@ -277,13 +268,46 @@ export default {
             .collection("TLFMCD")
             .get()
             .then(function(querySnapshot) {
+              let TLFM_data = [];
               querySnapshot.forEach(function(doc) {
-                vm.dbRecord.push(doc.data());
+                TLFM_data.push(doc.data());
               });
-              vm.treeData = com_fun.arrayToJson(vm.dbRecord);
+              vm.treeData = com_fun.arrayToJson(TLFM_data);
+              // window.location.reload()
             });
         }
+        // window.location.reload()
       });
+    },
+
+    saveCurrentState() {
+      // console.log(this.$refs.tree1.getNodes({}))
+      let arrayRecord = this.$refs.tree1.getNodes({});
+      this.snackbar = true;
+      this.databasemessage = "存檔中，請稍後...";
+      // this.timeout = 10000;
+
+      arrayRecord.forEach(item => {
+        dbFirestore
+          .collection("TLFMCD")
+          .doc(item.id)
+          .get()
+          .then(doc => {
+            if (doc.data().expanded !== item.expanded) {
+              // console.log(doc.data().expanded,item.expanded)
+              dbFirestore
+                .collection("TLFMCD")
+                .doc(item.id)
+                .update({ expanded: item.expanded })
+                .then(() => {
+                  this.snackbar = false;
+                });
+            } else {
+              this.snackbar = true;
+            }
+          });
+      });
+      this.snackbar = false;
     }
   }
 };
