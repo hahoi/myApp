@@ -15,9 +15,18 @@
         </v-col>
       </v-row>
     </v-container>
-      <img src="@/assets/loading.gif" height="40px" v-show="this.$store.state.loading"/>
-      <v-tree ref="tree1" :data="treeData" :tpl="tpl" :draggable="true" @drag-node-end="MyDrag" />
-      <v-btn color="info" @click="saveCurrentState" v-show="!this.$store.state.loading">儲存階層收合狀態</v-btn>
+    <img src="@/assets/loading.gif" height="40px" v-show="this.$store.state.loading" />
+    <v-tree ref="tree1" :data="treeData" :tpl="tpl" :draggable="true" @drag-node-end="MyDrag" />
+    <v-btn color="info" @click="saveCurrentState" v-show="!this.$store.state.loading">儲存階層收合狀態</v-btn>
+    <span v-show="progressShow" class="mx-10">
+      <v-progress-circular
+        :size="100"
+        :width="15"
+        :value="progressValue"
+        color="primary"
+      >{{ progressValue }}%</v-progress-circular>
+    </span>
+
     <v-snackbar v-model="snackbar" :timeout="timeout">
       {{ databasemessage }}
       <v-btn dark text @click="snackbar = false">Close</v-btn>
@@ -39,7 +48,9 @@ export default {
       databasemessage: "",
 
       searchword: "",
-      treeData: []
+      treeData: [],
+      progressValue: 0,
+      progressShow: false
     };
   },
   components: {},
@@ -86,6 +97,9 @@ export default {
   watch: {
     search(val) {
       val && val !== this.select && this.querySelections(val);
+    },
+    progressValue(){
+      return this.progressShow = this.progressValue === 0 ||  this.progressValue === 100 ? false : true
     }
   },
   computed: {},
@@ -283,16 +297,18 @@ export default {
     saveCurrentState() {
       // console.log(this.$refs.tree1.getNodes({}))
       let arrayRecord = this.$refs.tree1.getNodes({});
-      this.snackbar = true;
-      this.databasemessage = "存檔中，請稍後...";
       // this.timeout = 10000;
-
+      this.progressShow = true;
+      let arrayRecordLength = arrayRecord.length;
+      let i = 0;
       arrayRecord.forEach(item => {
         dbFirestore
           .collection("TLFMCD")
           .doc(item.id)
           .get()
           .then(doc => {
+            this.progressValue = Math.round((++i * 100) / arrayRecordLength);
+            // console.log(this.progressValue,i)
             if (doc.data().expanded !== item.expanded) {
               // console.log(doc.data().expanded,item.expanded)
               dbFirestore
@@ -300,14 +316,10 @@ export default {
                 .doc(item.id)
                 .update({ expanded: item.expanded })
                 .then(() => {
-                  this.snackbar = false;
                 });
-            } else {
-              this.snackbar = true;
             }
           });
       });
-      this.snackbar = false;
     }
   }
 };
