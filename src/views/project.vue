@@ -1,11 +1,6 @@
 <template>
   <div class="tree">
     <v-container>
-      <!-- <v-row>
-        <v-overlay :opacity="0.5" z-index="1000" :value="alert">
-          <v-alert color="red" dark transition="scale-transition">存檔中請稍後...</v-alert>
-        </v-overlay>
-      </v-row>-->
       <v-row>
         <v-col cols="6">
           <v-text-field label="關鍵字搜尋..." v-model="searchword"></v-text-field>
@@ -98,8 +93,9 @@ export default {
     search(val) {
       val && val !== this.select && this.querySelections(val);
     },
-    progressValue(){
-      return this.progressShow = this.progressValue === 0 ||  this.progressValue === 100 ? false : true
+    progressValue() {
+      this.progressShow =
+        this.progressValue === 0 || this.progressValue === 100 ? false : true
     }
   },
   computed: {},
@@ -315,8 +311,7 @@ export default {
                 .collection("TLFMCD")
                 .doc(item.id)
                 .update({ expanded: item.expanded })
-                .then(() => {
-                });
+                .then(() => {});
             }
           });
       });
