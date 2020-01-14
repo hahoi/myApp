@@ -15,6 +15,10 @@
     </v-container>
     <img src="@/assets/loading.gif" height="40px" v-show="this.$store.state.loading" />
     <v-tree ref="tree1" :data="treeData" :tpl="tpl" />
+
+
+    
+<!-- =========== 顯示詳細資料 ========= -->
     <v-container>
       <v-row>
         <v-dialog
@@ -37,7 +41,7 @@
           </v-toolbar>
           <!-- max-width="550" tile="true" outlined -->
           <v-card class="mx-auto" tile>
-            <v-card-text>
+            <v-card-text class="px-3">
               <!-- <v-divider></v-divider> -->
               <!-- 子組件渲染 -->
               <workdetail :propData="todo" @listenToChild="getChildData"></workdetail>
@@ -46,6 +50,10 @@
         </v-dialog>
       </v-row>
     </v-container>
+
+
+
+
   </div>
 </template>
 
@@ -54,7 +62,7 @@ import { dbFirestore } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
 
-import workdetail from "./workdetail.vue";
+import workdetail from "../components/workdetail.vue";
 export default {
   name: "worklist",
   data() {
@@ -171,6 +179,7 @@ export default {
           //   return {}; // 不顯示
           // }
         }
+        doc.ptitle = doc.title
 
         if (doc.process) {
           if (doc.process.length > 0) {
@@ -210,22 +219,25 @@ export default {
             domPropsInnerHTML={node.title}
             onClick={() => {
               ctx.parent.nodeSelected(ctx.props.node);
-              console.log(parent);
+            //   console.log(parent);
               let parentEndDate;
               if (parent === null) {
-                parentEndDate = moment().format("YYYY-MM-DD");
+                parentEndDate = this.$store.getters.projectEndDate
               } else {
-                parentEndDate = parent.enddate || moment().format("YYYY-MM-DD");
+                parentEndDate = parent.enddate || this.$store.getters.projectEndDate
               }
               this.todo = {
                 // id : node.id ,
-                ptitle: node.title,
+                // ptitle: node.title,
                 parentEndDate,
                 ...node
               };
+              let tempArrary = com_fun.deepCopy(this.todo)
+              this.$store.commit('setWorkItemData',tempArrary)
+              console.log(this.$store.getters.workItemData)
               //   vm.dialogScreen = true;
               //   vm.component_ok = true;
-              console.log(this.todo);
+            //   console.log(this.todo);
               this.workDetailDialog = true;
             }}
           />

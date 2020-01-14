@@ -7,18 +7,22 @@ const state = {
   device: "",
   userId: sessionStorage.getItem('uid'),
   user:null,
+  projectEndDate: "2020-05-31", //專案結束日期
   loading: true,  // this.$store.state.loading
   //權限控管
   // role: null,
   newRouter: [],
+  workItemData:{},
 }
 const getters = {
   device: state => state.device,
   userId: state => state.userId,
   user: state => state.user,
+  projectEndDate: state => state.projectEndDate, 
   loading: state => state.loading,
   // role: state => state.user.role,
   newRouter: state => state.newRouter,
+  workItemData: state => state.workItemData,
 }
 const mutations = {
   setLoading(state,loading){
@@ -38,6 +42,9 @@ const mutations = {
   },
   setNewRouter(state, newRouter) {
     state.newRouter = newRouter
+  },
+  setWorkItemData(state, data) {
+    state.workItemData = data
   },
 
 

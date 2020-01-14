@@ -95,7 +95,7 @@ export default {
     },
     progressValue() {
       this.progressShow =
-        this.progressValue === 0 || this.progressValue === 100 ? false : true
+        this.progressValue === 0 || this.progressValue === 100 ? false : true;
     }
   },
   computed: {},

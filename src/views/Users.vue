@@ -248,7 +248,7 @@ export default {
 
   methods: {
     initialize() {
-      this.$store.commit("Update_Loading", true);
+      this.$store.commit("setLoading", true);
       dbFirestore
         .collection("MyAppUsers") //.orderBy("createAt", "desc")
         .get()
@@ -274,7 +274,7 @@ export default {
             };
             this.desserts.push(data);
           });
-          this.$store.commit("Update_Loading", false);
+          this.$store.commit("setLoading", false);
         });
     },
 
