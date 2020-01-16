@@ -36,7 +36,7 @@
       <v-card-actions>
         <v-btn text color="orange" @click="workItemDetailEdit">編輯</v-btn>
         <v-spacer></v-spacer>
-        <v-btn text color="indigo" @click="ProcessAdd">進度填報</v-btn>
+        <v-btn text color="indigo" @click="ProcessAdd(newProcess,true)">進度填報</v-btn>
       </v-card-actions>
     </v-card>
 
@@ -83,7 +83,7 @@
 
                       <v-list>
                         <v-list-item>
-                          <v-list-item-title @click="ProcessEdit(item)">修改</v-list-item-title>
+                          <v-list-item-title @click="ProcessAdd(item,false)">修改</v-list-item-title>
                         </v-list-item>
                         <v-list-item>
                           <v-list-item-title>刪除</v-list-item-title>
@@ -110,24 +110,16 @@
       <v-card-actions></v-card-actions>
     </v-card>
 
-    <!-- ====================填報進度修改=================== -->
-    <v-dialog
-      v-model="ProcessEditDialog"
-      fullscreen
-      hide-overlay
-      transition="dialog-right-transition"
-    >
-      <workProcessEdit :propData3="ProcessEditData" @listenToChild3="getChildData_ProcessEdit"></workProcessEdit>
-    </v-dialog>
 
-    <!-- ====================填報進度新增=================== -->
+    <!-- ====================填報進度新增修改=================== -->
     <v-dialog
       v-model="ProcessAddDialog"
       fullscreen
       hide-overlay
       transition="dialog-right-transition"
     >
-      <workProcessAdd :propData4="ProcessAddData" @listenToChild4="getChildData_ProcessAdd"></workProcessAdd>
+                   <!-- 傳入該項(item)的Process資料，以及判斷是否新增或修改 -->
+      <workProcessAdd :propData4="ProcessAddData" :addProcess="addProcess" @listenToChild4="getChildData_ProcessAdd"></workProcessAdd>
     </v-dialog>
 
     <!--=================== PDFdialog 顯示PDF==========-->
@@ -161,7 +153,6 @@
 
 <script>
 import workdetailEdit from "./workdetailEdit";
-import workProcessEdit from "./workProcessEdit";
 import workProcessAdd from "./workProcessAdd";
 
 // import { dbFirestore } from "@/fb";
@@ -176,11 +167,16 @@ export default {
       detailEditDialog: false,
       editWorkItemDetailData: {},
 
-      ProcessEditDialog: false,
-      ProcessEditData: {},
-
       ProcessAddDialog: false,
       ProcessAddData: {},
+      addProcess: true,
+      newProcess:{
+        cfmpic: "",
+        pgdate: {},
+        pgdesc: "",
+        pickey: "",
+        t_pgdate: moment().format("YYYY-MM-DD")
+      },
 
       PDFdialog: false,
       PDFURL: "",
@@ -189,7 +185,6 @@ export default {
   },
   components: {
     workdetailEdit,
-    workProcessEdit,
     workProcessAdd
   },
   created() {},
@@ -202,7 +197,7 @@ export default {
       this.detailEditDialog = true;
       //深拷貝一份，送子component處理
       this.editWorkItemDetailData = com_fun.deepCopy(this.propData);
-      console.log("editWorkItemDetailData", this.editWorkItemDetailData);
+      // console.log("editWorkItemDetailData", this.editWorkItemDetailData);
     },
     getChildData_ItemDetailEdit(childData) {
       this.detailEditDialog = false;
@@ -236,36 +231,18 @@ export default {
       this.$emit("listenToChild", childData);
       this.dialog = false; //關閉視窗
     },
-    //=================================進度填報修改===================================
-    ProcessEdit(item) {
-      console.log("item", item);
-      this.ProcessEditDialog = true;
-      this.ProcessEditData = item;
-      console.log("ProcessEditData", this.ProcessEditData);
-    },
-    getChildData_ProcessEdit(childData) {
-      this.ProcessEditDialog = false;
-      if (!childData) return false;
-      //處理過資料，重新設定
-      this.propData.process = childData;
-    },
-    //=================================進度填報新增===================================
-    ProcessAdd() {
+    //=================================進度填報新增修改===================================
+    ProcessAdd(item,add) {
+      this.addProcess = add
       this.ProcessAddDialog = true;
-      let process = {
-        cfmpic: "",
-        pgdate: {},
-        pgdesc: "",
-        pickey: "",
-        t_pgdate: ""
-      };
-      this.ProcessAddData = process;
+      //拷貝一份，送子component處理
+      this.ProcessAddData = {...item};
     },
     getChildData_ProcessAdd(childData) {
-      // this.ProcessEditDialog = false;
-      // if (!childData) return false;
+      this.ProcessAddDialog = false;
+      if (!childData) return false;
       // //處理過資料，重新設定
-      // this.propData.process = childData
+      this.propData.process = childData
     },
 
     //=============PDF============

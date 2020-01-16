@@ -13,7 +13,7 @@
     </v-toolbar>
 
     <v-card height="100vh">
-      <v-card-title>修改已填報資料</v-card-title>
+      <v-card-title>{{addProcess ? "新增" : "修改已" }}填報資料</v-card-title>
       <v-card-text>
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-container class="text-center">
@@ -128,7 +128,7 @@ import com_fun from "../utils/function";
 import moment from "moment";
 export default {
   name: "workProcessAdd",
-  props: ["propData4"],
+  props: ["propData4","addProcess"],
   data() {
     return {
       alertResult: "",
@@ -136,7 +136,6 @@ export default {
       valid: false,
 
       rules: {
-        email: v => (v || "").match(/@/) || "email格式錯誤",
         length: len => v => (v || "").length <= len || `最多${len}個字元`,
         required: v => !!v || "這個欄位必須要輸入",
         size: v => !v || v.size < 2000000 || "頭相照片尺寸小於 2 MB！，不清楚"
@@ -165,7 +164,7 @@ export default {
   methods: {
     ProcessSave() {},
     ProcessClose() {
-      this.$emit("listenToChild3", false);
+      this.$emit("listenToChild4", false);
     },
 
     // ======================== 選擇佐證資料、照片======================================
