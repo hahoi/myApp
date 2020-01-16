@@ -28,16 +28,16 @@
           transition="dialog-right-transition"
         >
           <v-toolbar dark color="primary">
-            <v-btn icon dark text class="mx-2" @click="workDetailDialog = false">
+            <v-btn dark text class="px-0" @click="workDetailDialog = false">
               <v-icon>mdi-backspace</v-icon>
               <span class="title">退回</span>
             </v-btn>
             <!-- <v-toolbar-title>退回</v-toolbar-title> -->
             <v-spacer></v-spacer>
-            <v-btn icon dark text class="mx-2" @click="workDetailDialog = false">
+            <!-- <v-btn icon dark text class="mx-2" @click="workDetailDialog = false">
               <v-icon>mdi-content-save-outline</v-icon>
               <span class="title">儲存</span>
-            </v-btn>
+            </v-btn> -->
           </v-toolbar>
           <!-- max-width="550" tile="true" outlined -->
           <v-card class="mx-auto" tile>
@@ -51,7 +51,10 @@
       </v-row>
     </v-container>
 
-
+    <v-snackbar v-model="snackbar" :timeout="timeout">
+      {{ databasemessage }}
+      <v-btn dark text @click="snackbar = false">Close</v-btn>
+    </v-snackbar>
 
 
   </div>
@@ -72,7 +75,12 @@ export default {
       treeData: [],
       db_data: [],
       todo: {},
-      ShowRecentReport: 10
+      ShowRecentReport: 10,
+
+      snackbar: false,
+      timeout: 2000,
+      databasemessage: "",
+      
     };
   },
   components: {
@@ -80,20 +88,34 @@ export default {
   },
   created() {
     this.$store.commit("setLoading", true);
-    this.readData();
-    // dbFirestore
-    //   .collection("TLFMCD")
-    //   .get()
-    //   .then(querySnapshot => {
-    //     let db_data = [];
-    //     querySnapshot.forEach(doc => {
-    //       db_data.push(doc.data());
-    //     });
-    //     this.treeData = com_fun.arrayToJson(db_data);
-    //     this.$store.commit("setLoading", false);
-    //   });
+    //監聽資料庫變化
+    dbFirestore.collection("TLFMCD").onSnapshot(res => {
+      const changes = res.docChanges();
+      changes.forEach(change => {
+        if (change.type === "added" && !this.$store.state.loading) {
+          // console.log(this.$store.getters.user.name, "added");
+          this.databasemessage =
+            this.$store.getters.user.name + " 正在新增資料！";
+          this.snackbar = true;
+        }
+        if (change.type === "modified") {
+          // console.log("modified");
+          this.databasemessage =
+            this.$store.getters.user.name + " 已經修改資料！";
+          this.snackbar = true;
+        }
+        if (change.type === "removed") {
+          // console.log("removed");
+          this.databasemessage =
+            this.$store.getters.user.name + " 已經刪除資料！";
+          this.snackbar = true;
+        }
+      });
+    });
   },
-  mounted() {},
+  mounted() {
+    this.readData();
+  },
   watch: {},
   computed: {},
   methods: {
@@ -111,7 +133,7 @@ export default {
         })
         .then(res => {
           this.ShowRecentReport = res;
-          this.handleData();
+          this.handleData(this.db_data);
         });
     },
     readData() {
@@ -122,11 +144,11 @@ export default {
           querySnapshot.forEach(doc => {
             this.db_data.push(doc.data());
           });
-          this.handleData();
+          this.handleData(this.db_data);
         });
     },
-    handleData() {
-      let currentItem = this.db_data.map(doc => {
+    handleData(handleArrayData) {
+      let currentItem = handleArrayData.map(doc => {
         if (!doc.t_title) {
           doc.t_title = doc.title; //第一次，先存起來
         } else {
@@ -226,15 +248,15 @@ export default {
               } else {
                 parentEndDate = parent.enddate || this.$store.getters.projectEndDate
               }
-              this.todo = {
+              let tempArrary = {
                 // id : node.id ,
                 // ptitle: node.title,
                 parentEndDate,
                 ...node
               };
-              let tempArrary = com_fun.deepCopy(this.todo)
-              this.$store.commit('setWorkItemData',tempArrary)
-              console.log(this.$store.getters.workItemData)
+              this.todo = com_fun.deepCopy(tempArrary)
+            //   this.$store.commit('setWorkItemData',com_fun.deepCopy(tempArrary))
+            //   console.log(this.$store.getters.workItemData,this.todo)
               //   vm.dialogScreen = true;
               //   vm.component_ok = true;
             //   console.log(this.todo);
@@ -245,7 +267,75 @@ export default {
       );
     },
 
-    getChildData() {}
+    getChildData(childData) {
+      console.log("childData",childData)//從子層傳回父層的資料，進行存檔
+      //=====更改tree Array=======
+      let nodeArray = this.$refs.tree1.getNodes() //取的全部陣列 []
+      nodeArray.forEach(doc=>{
+        if (doc.id === childData.id) { //找到要update的物件
+          doc.title = doc.t_title //還原title
+          doc.depart = childData.depart
+          doc.t_enddate = childData.t_enddate
+          doc.t_startdate = childData.t_startdate
+          doc.status = childData.status
+          doc.process = childData.process
+          if (childData.memo){
+            doc.memo = childData.memo
+          }
+
+              if (doc.process) {
+                doc.process.sort(function(a, b) {
+                  return moment(b.t_pgdate).diff(moment(a.t_pgdate)); //b - a > 0 天數大的排在前面
+                })
+              }
+          
+              let days = "";
+              days = moment(doc.t_enddate).diff(moment(), "day");
+              if (doc.status == "完成"){//完成顯示綠色          
+                doc.title = "<span style='color: green'>" + doc.title + "</span>"}
+              if (doc.status == "不顯示" || doc.status == "停止") return {}; // 不顯示、停止，回傳空物件
+
+              if (days <= 0 && days !== "") {//剩餘天數為負數，顯示為紅色    
+                doc.title = "<span style='color: red'>" + doc.title + "</span>";
+              }
+              if (moment().isBefore(doc.t_startdate) || doc.t_startdate == "") { //已設定開始日期，但時間未到          
+                  doc.title ="<span style='color:#BDBDBD'>" + doc.title + "</span>";
+              }
+              if(doc.process) {
+                if(doc.process.length > 0) {//?天有填報的才顯示
+                  if (moment().diff(moment(doc.process[0].t_pgdate), "day") <= this.ShowRecentReport) {
+                    doc.title = `${doc.title}-${doc.depart} 【<span class="blue--text">${doc.process[0].t_pgdate} - ${doc.process[0].pgdesc}</span>】`
+                  }
+                }
+              }
+        }
+      })
+      this.treeData = com_fun.arrayToJson(nodeArray)
+      // window.location.reload()
+
+      //=====更改fireStore資料庫=======
+      let data = {
+        depart: childData.depart,
+        enddate: new Date( moment(childData.t_enddate) ),//轉換日期物件
+        startdate: new Date( moment(childData.t_startdate) ),
+        status: childData.status,
+        process: childData.process || []
+      }
+      if (childData.memo){
+        data.memo = childData.memo
+      }
+      // console.log(data)
+      dbFirestore
+        .collection("TLFMCD")
+        .doc(childData.id)
+        .update(data)
+        .then(() => {
+          console.log("Document successfully Update!");
+        })
+
+
+
+    }
   }
 };
 </script>

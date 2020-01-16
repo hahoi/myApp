@@ -12,7 +12,15 @@
     </v-container>
     <img src="@/assets/loading.gif" height="40px" v-show="this.$store.state.loading" />
     <v-tree ref="tree1" :data="treeData" :tpl="tpl" :draggable="true" @drag-node-end="MyDrag" />
-    <v-btn color="info" @click="saveCurrentState" v-show="!this.$store.state.loading">儲存階層收合狀態</v-btn>
+    <v-container>
+      <v-row >
+        <v-spacer></v-spacer>
+        <v-col cols="6">
+          <v-btn color="info" @click="saveCurrentState" v-show="!this.$store.state.loading">儲存階層收合狀態</v-btn>
+        </v-col>
+        <v-spacer></v-spacer>
+      </v-row>
+    </v-container>
     <span v-show="progressShow" class="mx-10">
       <v-progress-circular
         :size="100"
@@ -50,24 +58,11 @@ export default {
   },
   components: {},
   created() {
-    this.$store.commit("setLoading", true);
-    dbFirestore
-      .collection("TLFMCD")
-      .get()
-      .then(querySnapshot => {
-        let TLFM_data = [];
-        querySnapshot.forEach(doc => {
-          TLFM_data.push(doc.data());
-        });
-        this.treeData = com_fun.arrayToJson(TLFM_data);
-        this.$store.commit("setLoading", false);
-      });
-
     //監聽資料庫變化
     dbFirestore.collection("TLFMCD").onSnapshot(res => {
       const changes = res.docChanges();
       changes.forEach(change => {
-        if (change.type === "added") {
+        if (change.type === "added" && !this.$store.state.loading) {
           // console.log(this.$store.getters.user.name, "added");
           this.databasemessage =
             this.$store.getters.user.name + " 正在新增資料！";
@@ -88,7 +83,20 @@ export default {
       });
     });
   },
-  mounted() {},
+  mounted() {
+    this.$store.commit("setLoading", true);
+    dbFirestore
+      .collection("TLFMCD")
+      .get()
+      .then(querySnapshot => {
+        let TLFM_data = [];
+        querySnapshot.forEach(doc => {
+          TLFM_data.push(doc.data());
+        });
+        this.treeData = com_fun.arrayToJson(TLFM_data);
+        this.$store.commit("setLoading", false);
+      });
+  },
   watch: {
     search(val) {
       val && val !== this.select && this.querySelections(val);

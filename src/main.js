@@ -22,6 +22,17 @@ import 'vue-tree-halower/dist/halower-tree.min.css' // 你可以自定义树的�
 import VTree from 'vue-tree-halower'
 Vue.use(VTree)
 
+
+import 'viewerjs/dist/viewer.css'
+import Viewer from 'v-viewer'
+Vue.use(Viewer)
+
+
+
+
+
+
+
 Vue.config.productionTip = false
 
 new Vue({

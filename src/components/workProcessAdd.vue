@@ -27,13 +27,13 @@
               <v-dialog
                 ref="startDateDialog"
                 v-model="startDateDialogModal"
-                :return-value.sync="propData3.t_pgdate"
+                :return-value.sync="propData4.t_pgdate"
                 persistent
                 width="290px"
               >
                 <template v-slot:activator="{ on }">
                   <v-text-field
-                    v-model="propData3.t_pgdate"
+                    v-model="propData4.t_pgdate"
                     label="填報日期"
                     :rules="[rules.required]"
                     readonly
@@ -41,7 +41,7 @@
                   ></v-text-field>
                 </template>
                 <v-date-picker
-                  v-model="propData3.t_pgdate"
+                  v-model="propData4.t_pgdate"
                   first-day-of-week="1"
                   locale="zh-TW"
                   scrollable
@@ -51,7 +51,7 @@
                   <v-btn
                     text
                     color="primary"
-                    @click="$refs.startDateDialog.save(propData3.t_pgdate)"
+                    @click="$refs.startDateDialog.save(propData4.t_pgdate)"
                   >OK</v-btn>
                 </v-date-picker>
               </v-dialog>
@@ -60,15 +60,15 @@
             <v-col cols="12">
               <v-text-field
                 label="進度說明"
-                v-model="propData3.pgdesc"
+                v-model="propData4.pgdesc"
                 :rules="[(v) => v.length <= 25 || '輸入字數最多25個字！']"
                 :counter="25"
               ></v-text-field>
             </v-col>
             <v-col cols="12">
               <!-- 有圖片不是pdf，顯示圖片 -->
-              <div v-if="propData3.cfmpic != '' &&　!propData3.pdf">
-                <img v-bind:src="propData3.cfmpic" style="width:100px" />
+              <div v-if="propData4.cfmpic != '' &&　!propData4.pdf">
+                <img v-bind:src="propData4.cfmpic" style="width:100px" />
                 <br />
               </div>
             </v-col>
@@ -127,8 +127,8 @@ import { dbFirestore } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
 export default {
-  name: "workProcessEdit",
-  props: ["propData3"],
+  name: "workProcessAdd",
+  props: ["propData4"],
   data() {
     return {
       alertResult: "",
@@ -146,7 +146,11 @@ export default {
       imageFiles: [], //上傳檔案資訊
       progress: 0,
       imagesupload: false, //上傳存檔按鈕不顯示
-      selectimage: true //顯示佐證資料BUTTUN
+      selectimage: true, //顯示佐證資料BUTTUN
+
+
+
+    //   propData4:{}
     };
   },
   components: {},

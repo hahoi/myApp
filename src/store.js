@@ -5,7 +5,7 @@ Vue.use(Vuex)
 
 const state = {
   device: "",
-  userId: sessionStorage.getItem('uid'),
+  userId: sessionStorage.getItem('uid')=== "undefined" ? "" : sessionStorage.getItem('uid') ,
   user:null,
   projectEndDate: "2020-05-31", //專案結束日期
   loading: true,  // this.$store.state.loading
