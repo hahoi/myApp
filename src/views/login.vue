@@ -46,7 +46,7 @@
 
 <script>
 import slugify from "slugify";
-import { dbFirestore, dbAuth, dbFunctions } from "@/fb";
+import { dbFirestore, dbAuth, dbFunctions, databaseName } from "@/fb";
 
 export default {
   name: "login",

@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { dbFirestore } from "@/fb";
+import { dbFirestore, databaseName } from "@/fb";
 import com_fun from "../utils/function";
 
 export default {
@@ -19,7 +19,7 @@ export default {
   created() {
     let vm = this;
     dbFirestore
-      .collection("TLFMCD")
+      .collection(databaseName)
       .get()
       .then(function(querySnapshot) {
         let dbRecord = [];

@@ -123,7 +123,7 @@
 </template>
 
 <script>
-import { dbFirestore } from "@/fb";
+import { dbFirestore, databaseName } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
 export default {

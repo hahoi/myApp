@@ -13,7 +13,7 @@
     <img src="@/assets/loading.gif" height="40px" v-show="this.$store.state.loading" />
     <v-tree ref="tree1" :data="treeData" :tpl="tpl" :draggable="true" @drag-node-end="MyDrag" />
     <v-container>
-      <v-row >
+      <v-row>
         <v-spacer></v-spacer>
         <v-col cols="6">
           <v-btn color="info" @click="saveCurrentState" v-show="!this.$store.state.loading">儲存階層收合狀態</v-btn>
@@ -38,7 +38,7 @@
 </template>
 
 <script>
-import { dbFirestore } from "@/fb";
+import { dbFirestore, dbStorage, databaseName } from "@/fb";
 import com_fun from "../utils/function";
 export default {
   name: "project",
@@ -59,7 +59,7 @@ export default {
   components: {},
   created() {
     //監聽資料庫變化
-    dbFirestore.collection("TLFMCD").onSnapshot(res => {
+    dbFirestore.collection(databaseName).onSnapshot(res => {
       const changes = res.docChanges();
       changes.forEach(change => {
         if (change.type === "added" && !this.$store.state.loading) {
@@ -86,7 +86,7 @@ export default {
   mounted() {
     this.$store.commit("setLoading", true);
     dbFirestore
-      .collection("TLFMCD")
+      .collection(databaseName)
       .get()
       .then(querySnapshot => {
         let TLFM_data = [];
@@ -143,7 +143,7 @@ export default {
               if (node.title !== tmp) {
                 //按取消不會變更
                 dbFirestore
-                  .collection("TLFMCD")
+                  .collection(databaseName)
                   .doc(node.id)
                   .update({ title: node.title })
                   .then(function() {
@@ -181,16 +181,16 @@ export default {
         title: "新增項目" + timestamp,
         id: timestamp,
         pid: node.id,
-        expanded: true
-        // depart:"", 不再此處設定初值，在程式中判定物件屬性是否存在
-        // enddate: new Date(),
-        // startdate: {},
-        // status: "",
-        // process: [],
+        expanded: true,
+        depart: "", //設定初值，db在update時有key name才不會出錯
+        enddate: new Date(),
+        startdate: new Date(),
+        status: "",
+        process: []
         // remaindays: 0,
       };
       dbFirestore
-        .collection("TLFMCD")
+        .collection(databaseName)
         .doc(timestamp)
         .set(data)
         .then(function() {
@@ -205,24 +205,45 @@ export default {
     //===========刪除節點======================
     deleteNode(node, parent, index) {
       let vm = this;
+      //刪除分成兩種情況，含有children key name 及 沒有的
       if (typeof node.children == "object") {
         if (node.children.length >= 1) {
           // console.log(node, node.children);
           this.$confirm("包含子項目，不能刪除！請先刪除子項目。");
         } else {
+          vm.deleteNodeHandle(node, parent, index);
+        }
+      } else {
+        vm.deleteNodeHandle(node, parent, index);
+      }
+    },
+    //===處理節點刪除動作===
+    deleteNodeHandle(node, parent, index) {
+      this.$confirm(
+        "刪除後無法復原，<br>確定要刪除【" + node.title + "】嗎？",
+        { color: "red", title: "嚴重警告(第一次)" }
+      ).then(res => {
+        if (res) {
           this.$confirm(
-            "刪除後無法復原，<br>確定要刪除【" + node.title + "】嗎？",
-            { color: "red", title: "嚴重警告" }
+            "此節點中的填報資料及佐證資料都會被刪除！<br>確定要刪除嗎？",
+            {
+              color: "orange",
+              title: "嚴重警告(第二次)"
+            }
           ).then(res => {
             if (res) {
-              // console.log(node.id,"parent->",parent,"index->",index);
+              // console.log(node.id, "parent->", parent, "index->", index);
               dbFirestore
-                .collection("TLFMCD")
+                .collection(databaseName)
                 .doc(node.id)
                 .delete()
-                .then(function() {
-                  // console.log("資料刪除成功！", node.id);
-                  vm.$refs.tree1.delNode(node, parent, index);
+                .then(() => {
+                  console.log("資料刪除成功！", node.id, node.process);
+                  if (node.process.length > 0) {
+                    let DeleteRef = "/" + "DESIGN" + "/" + node.id + "/";
+                    this.deleteStorageFile(DeleteRef);
+                  }
+                  this.$refs.tree1.delNode(node, parent, index);
                 })
                 .catch(function(error) {
                   console.error("Error removing document: ", error);
@@ -230,32 +251,23 @@ export default {
             }
           });
         }
-      } else {
-        this.$confirm(
-          "刪除後無法復原，<br>確定要刪除【" + node.title + "】嗎？",
-          {
-            color: "red",
-            title: "嚴重警告"
-          }
-        ).then(res => {
-          if (res) {
-            // console.log(node.id, "parent->", parent, "index->", index);
-            dbFirestore
-              .collection("TLFMCD")
-              .doc(node.id)
-              .delete()
-              .then(function() {
-                // console.log("資料刪除成功！", node.id);
-                vm.$refs.tree1.delNode(node, parent, index);
-              })
-              .catch(function(error) {
-                console.error("Error removing document: ", error);
-              });
-          }
-        });
-      }
+      });
     },
-    //===========搬移資料======================
+    // 刪除fireStorage儲存的圖檔
+    deleteStorageFile(DeleteRef) {
+      console.log("刪除fireStorage儲存的圖檔", DeleteRef);
+      // 刪除fireStorage儲存的圖檔
+      dbStorage
+        .ref()
+        .child(DeleteRef)
+        .delete()
+        .then(function() {
+          console.log("File deleted successfully");
+        })
+        .catch(function(error) {
+          console.log("Uh-oh, an error occurred!");
+        });
+    }, //===========搬移資料======================
     MyDrag(...args) {
       let { 0: Node } = args;
       // console.log("node-title", Node.dragNode.title);
@@ -270,7 +282,7 @@ export default {
       }).then(res => {
         if (res) {
           dbFirestore
-            .collection("TLFMCD")
+            .collection(databaseName)
             .doc(Node.dragNode.id)
             .update({ pid: Node.targetNode.id })
             .then(function() {
@@ -283,7 +295,7 @@ export default {
         } else {
           let vm = this;
           dbFirestore
-            .collection("TLFMCD")
+            .collection(databaseName)
             .get()
             .then(function(querySnapshot) {
               let TLFM_data = [];
@@ -307,7 +319,7 @@ export default {
       let i = 0;
       arrayRecord.forEach(item => {
         dbFirestore
-          .collection("TLFMCD")
+          .collection(databaseName)
           .doc(item.id)
           .get()
           .then(doc => {
@@ -316,7 +328,7 @@ export default {
             if (doc.data().expanded !== item.expanded) {
               // console.log(doc.data().expanded,item.expanded)
               dbFirestore
-                .collection("TLFMCD")
+                .collection(databaseName)
                 .doc(item.id)
                 .update({ expanded: item.expanded })
                 .then(() => {});

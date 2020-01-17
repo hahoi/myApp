@@ -134,7 +134,7 @@
 <script>
 // import slugify from "slugify";
 import moment from "moment";
-import { dbFirestore, dbAuth, dbFunctions } from "@/fb";
+import { dbFirestore, dbAuth, dbFunctions, databaseName } from "@/fb";
 import { powerRouter, copyPowerRouter } from "../router";
 
 export default {

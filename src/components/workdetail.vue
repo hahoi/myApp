@@ -36,7 +36,7 @@
       <v-card-actions>
         <v-btn text color="orange" @click="workItemDetailEdit">編輯</v-btn>
         <v-spacer></v-spacer>
-        <v-btn text color="indigo" @click="ProcessAdd(newProcess,true)">進度填報</v-btn>
+        <v-btn text color="indigo" @click="ProcessAdd(newProcess,propData.id,true,-1)">進度填報</v-btn>
       </v-card-actions>
     </v-card>
 
@@ -74,7 +74,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="item in propData.process" :key="item.id">
+                <tr v-for="(item,index) in propData.process">
                   <td class="text-left px-0">
                     <v-menu bottom>
                       <template v-slot:activator="{ on }">
@@ -83,7 +83,7 @@
 
                       <v-list>
                         <v-list-item>
-                          <v-list-item-title @click="ProcessAdd(item,false)">修改</v-list-item-title>
+                          <v-list-item-title @click="ProcessAdd(item,propData.id,false,index)">修改</v-list-item-title>
                         </v-list-item>
                         <v-list-item>
                           <v-list-item-title>刪除</v-list-item-title>
@@ -110,7 +110,6 @@
       <v-card-actions></v-card-actions>
     </v-card>
 
-
     <!-- ====================填報進度新增修改=================== -->
     <v-dialog
       v-model="ProcessAddDialog"
@@ -118,8 +117,14 @@
       hide-overlay
       transition="dialog-right-transition"
     >
-                   <!-- 傳入該項(item)的Process資料，以及判斷是否新增或修改 -->
-      <workProcessAdd :propData4="ProcessAddData" :addProcess="addProcess" @listenToChild4="getChildData_ProcessAdd"></workProcessAdd>
+      <!-- 傳入該項(item)的Process資料，以及判斷是否新增或修改 -->
+      <workProcessAdd
+        :propData4="ProcessAddData"
+        :addProcess="addProcess"
+        :ProcessNodeId="ProcessNodeId"
+        :ProcessItemIndex="ProcessItemIndex"
+        @listenToChild4="getChildData_ProcessAdd"
+      ></workProcessAdd>
     </v-dialog>
 
     <!--=================== PDFdialog 顯示PDF==========-->
@@ -155,7 +160,7 @@
 import workdetailEdit from "./workdetailEdit";
 import workProcessAdd from "./workProcessAdd";
 
-// import { dbFirestore } from "@/fb";
+import { dbFirestore, databaseName } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
 
@@ -170,9 +175,12 @@ export default {
       ProcessAddDialog: false,
       ProcessAddData: {},
       addProcess: true,
-      newProcess:{
+      ProcessNodeId: "",
+      ProcessItemIndex: -1,
+
+      newProcess: {
         cfmpic: "",
-        pgdate: {},
+        pgdate: new Date(moment()), //轉換日期物件
         pgdesc: "",
         pickey: "",
         t_pgdate: moment().format("YYYY-MM-DD")
@@ -195,8 +203,7 @@ export default {
     //==========================================基本資料================================
     workItemDetailEdit() {
       this.detailEditDialog = true;
-      //深拷貝一份，送子component處理
-      this.editWorkItemDetailData = com_fun.deepCopy(this.propData);
+      this.editWorkItemDetailData = this.propData;
       // console.log("editWorkItemDetailData", this.editWorkItemDetailData);
     },
     getChildData_ItemDetailEdit(childData) {
@@ -232,17 +239,58 @@ export default {
       this.dialog = false; //關閉視窗
     },
     //=================================進度填報新增修改===================================
-    ProcessAdd(item,add) {
-      this.addProcess = add
+    ProcessAdd(item, nodeid, add, index) {
+      this.addProcess = add;
       this.ProcessAddDialog = true;
-      //拷貝一份，送子component處理
-      this.ProcessAddData = {...item};
+      // console.log(item,nodeid,index)
+      this.ProcessNodeId = nodeid;
+      this.ProcessItemIndex = index;
+      //錯錯錯錯 拷貝一份，送子component處理 錯
+      this.ProcessAddData = item;
+      console.log(this.ProcessAddData);
     },
-    getChildData_ProcessAdd(childData) {
+
+    getChildData_ProcessAdd(childData, nodeid, add, index) {
       this.ProcessAddDialog = false;
-      if (!childData) return false;
-      // //處理過資料，重新設定
-      this.propData.process = childData
+      if (!childData) return false; //按取消鍵時
+
+      //日期的轉換非常重要
+      childData.pgdate = new Date(moment(childData.t_pgdate)); //轉換日期物件
+
+      if (add) {
+        //新增時
+        this.propData.process.push(childData);
+
+        console.log("propData", this.propData);
+      } else {
+        // this.propData.process[index]=childData //不可以：用指定array[index]去儲存內容。
+        Object.assign(this.propData.process[index], childData);
+
+        // console.log(childData);
+        console.log(this.propData);
+
+        //更新螢幕
+        this.$forceUpdate();
+      }
+
+      //資料定要重整過後才可以存檔，
+      let updateData = {
+        //有多餘的 object key，只更新必要的
+        process: this.propData.process //db的日期欄位太複雜無法 copy，要用指定的
+      };
+
+      console.log("updateData", updateData);
+      // 更新資料庫
+      dbFirestore
+        .collection(databaseName)
+        .doc(nodeid)
+        .update(updateData)
+        .then(() => {
+          console.log("Document successfully Update!");
+        })
+        .catch(function(error) {
+          console.log("Uh-oh, an error occurred!");
+        });
     },
 
     //=============PDF============

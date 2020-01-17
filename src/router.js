@@ -2,7 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 import com_fun from "./utils/function";
 import store from './store'
-import { dbFirestore } from "@/fb";
+import { dbFirestore, databaseName } from "@/fb";
 
 Vue.use(VueRouter)
 

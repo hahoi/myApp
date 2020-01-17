@@ -9,6 +9,7 @@ const state = {
   user:null,
   projectEndDate: "2020-05-31", //專案結束日期
   loading: true,  // this.$store.state.loading
+  LevelOneID:"1234567890abc",  // this.$store.state.LevelOneID 
   //權限控管
   // role: null,
   newRouter: [],

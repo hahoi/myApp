@@ -6,17 +6,13 @@
         <span class="title">退回</span>
       </v-btn>
       <v-spacer></v-spacer>
-      <v-btn dark text class="px-0" @click="ProcessSave">
-        <v-icon>mdi-content-save-outline</v-icon>
-        <span class="title">儲存</span>
-      </v-btn>
     </v-toolbar>
 
     <v-card height="100vh">
       <v-card-title>{{addProcess ? "新增" : "修改已" }}填報資料</v-card-title>
-      <v-card-text>
+      <v-card-text class="pb-0">
         <v-form ref="form" v-model="valid" lazy-validation>
-          <v-container class="text-center">
+          <v-container class="text-center pb-0">
             <div class="text-center mb-4">
               <v-overlay :opacity="0.5" z-index="1" :value="alert">
                 <v-alert color="red" dark transition="scale-transition">{{ alertResult }}</v-alert>
@@ -57,34 +53,69 @@
               </v-dialog>
             </v-col>
 
-            <v-col cols="12">
+            <v-col cols="12" class="pb-0">
               <v-text-field
                 label="進度說明"
                 v-model="propData4.pgdesc"
-                :rules="[(v) => v.length <= 25 || '輸入字數最多25個字！']"
+                :rules="[rules.required,rules.length(25)]"
                 :counter="25"
               ></v-text-field>
             </v-col>
-            <v-col cols="12">
-              <!-- 有圖片不是pdf，顯示圖片 -->
-              <div v-if="propData4.cfmpic != '' &&　!propData4.pdf">
-                <img v-bind:src="propData4.cfmpic" style="width:100px" />
-                <br />
-              </div>
+            <v-col cols="12" class="pa-0" align="right">
+              <v-btn text v-if="propData4.cfmpic !== ''" color="orange" @click="textSave">進度說明存檔</v-btn>
             </v-col>
-            <v-col cols="12">
-              <input
-                id="inputimage"
-                type="file"
-                @change="handleFileSelect"
-                style="display:none"
-                ref="fileInput"
-                accept="image/*, .pdf"
-              />
-              <v-btn v-show="selectimage" raised @click="$refs.fileInput.click()">佐證資料</v-btn>
-              <div class="imghandle" v-if="hasImage">
-                <ul>
-                  <li v-for="(item,key) in imageFiles">
+          </v-container>
+        </v-form>
+      </v-card-text>
+
+      <template>
+        <v-stepper v-model="e1" vertical>
+          <v-stepper-header>
+            <v-stepper-step :complete="e1 > 1" step="1">步驟1</v-stepper-step>
+            <v-divider></v-divider>
+            <v-stepper-step :complete="e1 > 2" step="2">步驟2</v-stepper-step>
+            <v-divider></v-divider>
+            <v-stepper-step step="3">步驟3</v-stepper-step>
+          </v-stepper-header>
+
+          <v-stepper-items>
+            <v-stepper-content step="1">
+              <v-card class="mb-2" color="grey lighten-2">
+                <v-row align="center" justify="center">
+                  <v-col cols="12">
+                    <!-- 有圖片不是pdf，顯示圖片 -->
+                    <div v-if="propData4.cfmpic != '' &&　!propData4.pdf">
+                      <v-img :src="propData4.cfmpic" max-width="100" />
+                    </div>
+                    <div v-if="propData4.pdf">PDF</div>
+                    <span id="progress" v-if="progress > 0 ">
+                      <v-progress-circular
+                        :size="100"
+                        :width="15"
+                        :rotate="-90"
+                        :value="progress"
+                        color="primary"
+                      >{{ progress }}</v-progress-circular>
+                    </span>
+
+                    <input
+                      id="inputimage"
+                      ref="fileInput"
+                      type="file"
+                      @change="handleFileSelect"
+                      style="display:none"
+                      accept="image/*, .pdf"
+                    />
+                  </v-col>
+                </v-row>
+              </v-card>
+              <v-btn color="primary" @click="$refs.fileInput.click();">佐證資料</v-btn>
+            </v-stepper-content>
+
+            <v-stepper-content step="2">
+              <v-card class="mb-2" color="grey lighten-2">
+                <v-row align="center" justify="center">
+                  <div v-for="(item,key) in imageFiles">
                     <span class="delbtn" @click="delImage(key)">
                       <v-icon large color>mdi-delete-forever</v-icon>
                     </span>
@@ -101,34 +132,68 @@
                       </div>
                     </div>
                     <!-- <pre>{{item.EXIF}}</pre> -->
-                  </li>
-                </ul>
-                <div id="progress" v-if="progress > 0">
-                  <v-progress-circular
-                    :size="100"
-                    :width="15"
-                    :rotate="-90"
-                    :value="progress"
-                    color="primary"
-                  >{{ progress }}</v-progress-circular>
-                </div>
-                <v-btn class="my-4" v-show="imagesupload" color="info" @click="uploadImage()">上傳圖檔</v-btn>
-              </div>
-            </v-col>
-          </v-container>
-        </v-form>
-      </v-card-text>
+                  </div>
+                  <span id="progress" v-if="progress > 0 ">
+                    <v-progress-circular
+                      :size="100"
+                      :width="15"
+                      :rotate="-90"
+                      :value="progress"
+                      color="primary"
+                    >{{ progress }}</v-progress-circular>
+                  </span>
+                </v-row>
+              </v-card>
+              <v-btn color="primary" @click="uploadImage();">上傳圖檔</v-btn>
+              <v-btn text @click="ProcessClose">取消</v-btn>
+            </v-stepper-content>
+
+            <v-stepper-content step="3">
+              <v-card class="mb-2" color="grey lighten-2">
+                <v-row align="center" justify="center">
+                  <v-col cols="12">
+                    <!-- 有圖片不是pdf，顯示圖片 -->
+                    <div v-if="propData4.cfmpic != '' &&　!propData4.pdf">
+                      <v-img :src="propData4.cfmpic" max-width="100" />
+                    </div>
+                    <div v-if="propData4.pdf">PDF</div>
+                    <div id="progress" v-if="progress > 0 ">
+                      <v-progress-circular
+                        :size="100"
+                        :width="15"
+                        :rotate="-90"
+                        :value="progress"
+                        color="primary"
+                      >{{ progress }}</v-progress-circular>
+                    </div>
+                  </v-col>
+                </v-row>
+              </v-card>
+
+              <v-btn color="primary" @click="ProcessSave">完成並存檔</v-btn>
+              <v-btn text @click="ProcessClose">取消</v-btn>
+            </v-stepper-content>
+          </v-stepper-items>
+        </v-stepper>
+      </template>
     </v-card>
   </div>
 </template>
 
+
+
+
+
+
+
+
 <script>
-import { dbFirestore } from "@/fb";
+import { dbFirestore, dbStorage, databaseName } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
 export default {
   name: "workProcessAdd",
-  props: ["propData4","addProcess"],
+  props: ["propData4", "ProcessNodeId", "addProcess", "ProcessItemIndex"],
   data() {
     return {
       alertResult: "",
@@ -144,12 +209,9 @@ export default {
 
       imageFiles: [], //上傳檔案資訊
       progress: 0,
-      imagesupload: false, //上傳存檔按鈕不顯示
-      selectimage: true, //顯示佐證資料BUTTUN
 
-
-
-    //   propData4:{}
+      e1: 1,
+      steps: 2
     };
   },
   components: {},
@@ -162,8 +224,62 @@ export default {
     }
   },
   methods: {
-    ProcessSave() {},
+    textSave() {
+      if (!this.$refs.form.validate()) {
+        //有錯
+        console.log(this.$refs.form.validate());
+        return false;
+      }
+
+        this.$emit(
+          "listenToChild4",
+          this.propData4,
+          this.ProcessNodeId,
+          this.addProcess,
+          this.ProcessItemIndex
+        );
+      this.imageFiles = []; //圖片螢幕顯示部分，需清除
+      this.$refs.fileInput.value = ""; //input type=file 清空檔名
+      this.progress = 0; //進度歸零      
+      this.e1 = 1;
+    },
+    ProcessSave() {
+      if (!this.$refs.form.validate()) {
+        //有錯
+        return false;
+      }
+      this.imageFiles = []; //圖片螢幕顯示部分，需清除
+      this.$refs.fileInput.value = ""; //input type=file 清空檔名
+      this.progress = 0; //進度歸零      
+      this.$emit(
+        "listenToChild4",
+        this.propData4,
+        this.ProcessNodeId,
+        this.addProcess,
+        this.ProcessItemIndex
+      );
+      this.e1 = 1;
+    },
     ProcessClose() {
+      //新增時，已上傳的佐證資料，要先刪除
+      if (this.propData4.pickey !== "") {
+        dbStorage
+          .ref()
+          .child(this.propData4.pickey)
+          .delete()
+          .then(function() {
+            console.log("File deleted successfully");
+          })
+          .catch(function(error) {
+            console.log("Uh-oh, an error occurred!");
+          });
+      }
+
+      this.imageFiles = []; //圖片螢幕顯示部分，需清除
+      // document.getElementById("inputimage").value = ""; //input type=file 清空檔名
+      this.$refs.fileInput.value = ""; //input type=file 清空檔名
+      this.progress = 0; //進度歸零
+      this.e1 = 1;
       this.$emit("listenToChild4", false);
     },
 
@@ -176,20 +292,18 @@ export default {
       let files = e.target.files;
       let filesArr = Array.prototype.slice.call(files);
 
-      this.selectimage = false; //隱藏選擇佐證資料按鈕
-
-      //處理PDF
       // console.log(filesArr[0])
       const file = filesArr[0];
+      //=================處理PDF==================
       if (file.type == "application/pdf") {
         const name = +new Date() + "-" + file.name;
         const metadata = {
           contentType: file.type
         };
 
-        const uploadTask = dbFirestore
+        const uploadTask = dbStorage
           .ref()
-          .child("/TLFMCD/" + vm.propData.id + "/" + name)
+          .child("/" + databaseName + "/" + vm.ProcessNodeId + "/" + name)
           .put(file, metadata);
         uploadTask.on(
           "state_changed",
@@ -204,17 +318,23 @@ export default {
             uploadTask.snapshot.ref
               .getDownloadURL()
               .then(function(downloadURL) {
-                vm.editedItem.cfmpic = downloadURL; //link URL
-                // console.log(vm.editedItem.cfmpic)
-                vm.editedItem.pickey = "/TLFMCD/" + vm.propData.id + "/" + name; //find 鍵值，刪除用
-                vm.editedItem.pdf = true; //判斷是否為PDF
+                vm.propData4.cfmpic = downloadURL; //link URL
+                // console.log(vm.propData4.cfmpic)
+                vm.propData4.pickey =
+                  "/" + databaseName + "/" + vm.ProcessNodeId + "/" + name; //find 鍵值，刪除用
+                vm.propData4.pdf = true; //判斷是否為PDF
+
+                //因PDF不必先顯示在螢幕上，已直接上傳，故跳到步驟三
+                vm.e1 = 3;
+                // progress圖形不顯示
+                // vm.progress = 0;
               });
           }
         );
         return; //處理完PDF，返回不再繼續處理圖片
       }
 
-      //處理圖片
+      //=====================處理圖片=====================
       filesArr.forEach(function(file, i) {
         if (!file.type.match("image.*")) {
           return;
@@ -316,9 +436,11 @@ export default {
             // console.log(vm.imageFiles)
           };
         };
+        // 圖片壓縮完顯示在螢幕
         reader.readAsDataURL(file);
       });
-      this.imagesupload = true; //顯示上傳存檔按鈕
+      // 跳到步驟2，因不是callback情況，所以放在迴圈外
+      this.e1 = 2;
     },
     dellatlng(index) {
       let yes_del = confirm("刪除GPS資料？");
@@ -335,25 +457,26 @@ export default {
     delImage: function(index) {
       //del 螢幕顯示
       this.imageFiles.shift(index);
-      this.selectimage = true //顯示選擇佐證資料按鈕
+      this.e1 = 1;
+      // this.selectimage = true; //顯示選擇佐證資料按鈕
     },
     removeImage: function(e) {
       this.imageFiles = [];
     },
 
-    //上傳圖片、照片檔案
+    //=============上傳圖片、照片檔案======================
     uploadImage: function() {
       let vm = this;
-      //let result = vm.data1.find(obj => obj.id == vm.tid);  //propData
 
       let imageFiles = vm.imageFiles;
       let metadata = { contentType: "image/jpeg" };
 
       imageFiles.forEach((item, index, array) => {
-        let uploadTask = db
-          .storage()
+        let uploadTask = dbStorage
           .ref()
-          .child("/TLFMCD/" + vm.propData.id + "/" + item.filename)
+          .child(
+            "/" + databaseName + "/" + vm.ProcessNodeId + "/" + item.filename
+          )
           .putString(item.imageDataUrl, "data_url");
 
         uploadTask.on(
@@ -362,9 +485,11 @@ export default {
             //非同步處理
             vm.progress =
               (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            // $("#progress").html('上傳進度： ' + Math.floor(progress) + '%')
           },
           function(error) {
+            //firebase storage 需要驗證
+            //write: if request.auth != null; ，有驗證，可以寫入
+            console.log(error);
             alert("上傳圖片有錯誤！");
           },
           function() {
@@ -373,33 +498,30 @@ export default {
             uploadTask.snapshot.ref
               .getDownloadURL()
               .then(function(downloadURL) {
-                vm.editedItem.cfmpic = downloadURL; //link URL
-                // console.log(vm.editedItem.cfmpic)
-                vm.editedItem.pickey =
-                  "/TLFMCD/" + vm.propData.id + "/" + item.filename; //find 鍵值
-                // console.log(vm.editedItem.pickey)
+                vm.propData4.cfmpic = downloadURL; //link URL
+                // console.log(vm.propData4.cfmpic)
+                vm.propData4.pickey =
+                  "/" +
+                  databaseName +
+                  "/" +
+                  vm.ProcessNodeId +
+                  "/" +
+                  item.filename; //find 鍵值
+                // console.log(vm.propData4.pickey)
                 vm.imageFiles = []; //螢幕顯示部分，上傳完畢后，需清除
+
+                vm.e1 = 3;
+                // progress圖形不顯示
+                vm.progress = 0;
               });
           }
         );
       });
-      this.imagesupload = false; //上傳存檔按鈕不顯示
+      // this.imagesupload = false; //上傳存檔按鈕不顯示
+      // this.finish = true;
     }
   }
 };
 </script>
 <style scoped>
-.images img {
-  height: 20px !important;
-}
-h3 {
-  margin-top: 10px;
-  font-weight: normal;
-}
-.imghandle ul {
-  list-style: none;
-}
-.progress {
-  margin: 1rem;
-}
 </style>

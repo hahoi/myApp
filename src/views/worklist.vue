@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import { dbFirestore } from "@/fb";
+import { dbFirestore, databaseName } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
 
@@ -89,7 +89,7 @@ export default {
   created() {
     this.$store.commit("setLoading", true);
     //監聽資料庫變化
-    dbFirestore.collection("TLFMCD").onSnapshot(res => {
+    dbFirestore.collection(databaseName).onSnapshot(res => {
       const changes = res.docChanges();
       changes.forEach(change => {
         if (change.type === "added" && !this.$store.state.loading) {
@@ -138,7 +138,7 @@ export default {
     },
     readData() {
       dbFirestore
-        .collection("TLFMCD")
+        .collection(databaseName)
         .get()
         .then(querySnapshot => {
           querySnapshot.forEach(doc => {
@@ -248,13 +248,12 @@ export default {
               } else {
                 parentEndDate = parent.enddate || this.$store.getters.projectEndDate
               }
-              let tempArrary = {
+              this.todo = {
                 // id : node.id ,
                 // ptitle: node.title,
                 parentEndDate,
                 ...node
               };
-              this.todo = com_fun.deepCopy(tempArrary)
             //   this.$store.commit('setWorkItemData',com_fun.deepCopy(tempArrary))
             //   console.log(this.$store.getters.workItemData,this.todo)
               //   vm.dialogScreen = true;
@@ -326,7 +325,7 @@ export default {
       }
       // console.log(data)
       dbFirestore
-        .collection("TLFMCD")
+        .collection(databaseName)
         .doc(childData.id)
         .update(data)
         .then(() => {
