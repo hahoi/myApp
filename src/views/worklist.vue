@@ -128,8 +128,10 @@ export default {
           // persistent: true
         })
         .then(res => {
-          this.ShowRecentReport = res;
-          this.handleData(this.db_data);
+          if (res) {
+            this.ShowRecentReport = res;
+            this.handleData(this.db_data);
+          }
         });
     },
     readData() {
@@ -160,6 +162,7 @@ export default {
 
         if (doc.process) {
           doc.process.forEach(element => {
+            // console.log(element.pgdate);
             element.t_pgdate =
               moment(element.pgdate.toDate()).format("YYYY-MM-DD") || "";
           });
@@ -250,7 +253,7 @@ export default {
               this.todo = {
                 // id : node.id ,
                 // ptitle: node.title,
-                parentEndDate,
+                parentEndDate,//加上上層專案結束日期·專案管理用
                 ...node
               };
               //   this.$store.commit('setWorkItemData',com_fun.deepCopy(tempArrary))

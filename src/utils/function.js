@@ -51,7 +51,7 @@ export default {
         return cloneO;
     },
 
-    //樹狀JSON深層拷貝，加上 array_key 在object上
+    //樹狀JSON深層拷貝，加上 array_key 在object上，方便操作Ａrray
     DBdeepCopy(obj, key = 0) {
         // basic type deep copy
         if (obj === null || obj === undefined || typeof obj !== 'object') {

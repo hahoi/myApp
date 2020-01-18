@@ -57,8 +57,8 @@
               <v-text-field
                 label="進度說明"
                 v-model="propData4.pgdesc"
-                :rules="[rules.required,rules.length(25)]"
-                :counter="25"
+                :rules="[rules.required,rules.length(32)]"
+                :counter="32"
               ></v-text-field>
             </v-col>
             <v-col cols="12" class="pa-0" align="right">
