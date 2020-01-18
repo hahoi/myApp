@@ -62,7 +62,7 @@
               ></v-text-field>
             </v-col>
             <v-col cols="12" class="pa-0" align="right">
-              <v-btn text v-if="propData4.cfmpic !== ''" color="orange" @click="textSave">進度說明存檔</v-btn>
+              <v-btn text v-if="propData4.cfmpic !== '' && e1!==3" color="orange" @click="ProcessSave">進度說明存檔</v-btn>
             </v-col>
           </v-container>
         </v-form>
@@ -170,7 +170,7 @@
                 </v-row>
               </v-card>
 
-              <v-btn color="primary" @click="ProcessSave">完成並存檔</v-btn>
+              <v-btn color="orange" @click="ProcessSave">完成並存檔</v-btn>
               <v-btn text @click="ProcessClose">取消</v-btn>
             </v-stepper-content>
           </v-stepper-items>
@@ -224,32 +224,34 @@ export default {
     }
   },
   methods: {
-    textSave() {
-      if (!this.$refs.form.validate()) {
-        //有錯
-        console.log(this.$refs.form.validate());
-        return false;
-      }
+    // textSave() {
+    //   if (!this.$refs.form.validate()) {
+    //     //有錯
+    //     console.log(this.$refs.form.validate());
+    //     return false;
+    //   }
 
-        this.$emit(
-          "listenToChild4",
-          this.propData4,
-          this.ProcessNodeId,
-          this.addProcess,
-          this.ProcessItemIndex
-        );
-      this.imageFiles = []; //圖片螢幕顯示部分，需清除
-      this.$refs.fileInput.value = ""; //input type=file 清空檔名
-      this.progress = 0; //進度歸零      
-      this.e1 = 1;
-    },
+    //     this.$emit(
+    //       "listenToChild4",
+    //       this.propData4,
+    //       this.ProcessNodeId,
+    //       this.addProcess,
+    //       this.ProcessItemIndex
+    //     );
+    //   this.imageFiles = []; //圖片螢幕顯示部分，需清除
+    //   document.getElementById("inputimage").value = ""; //input type=file 清空檔名
+    //   // this.$refs.fileInput.value = ""; //input type=file 清空檔名
+    //   this.progress = 0; //進度歸零      
+    //   this.e1 = 1;
+    // },
     ProcessSave() {
       if (!this.$refs.form.validate()) {
         //有錯
         return false;
       }
       this.imageFiles = []; //圖片螢幕顯示部分，需清除
-      this.$refs.fileInput.value = ""; //input type=file 清空檔名
+      document.getElementById("inputimage").value = ""; //input type=file 清空檔名
+      // this.$refs.fileInput.value = ""; //input type=file 清空檔名
       this.progress = 0; //進度歸零      
       this.$emit(
         "listenToChild4",
@@ -261,23 +263,23 @@ export default {
       this.e1 = 1;
     },
     ProcessClose() {
-      //新增時，已上傳的佐證資料，要先刪除
-      if (this.propData4.pickey !== "") {
-        dbStorage
-          .ref()
-          .child(this.propData4.pickey)
-          .delete()
-          .then(function() {
-            console.log("File deleted successfully");
-          })
-          .catch(function(error) {
-            console.log("Uh-oh, an error occurred!");
-          });
-      }
+      //新增時，已上傳的佐證資料，要先刪除，這個邏輯上還有問題
+      // if (this.propData4.pickey !== "") {
+      //   dbStorage
+      //     .ref()
+      //     .child(this.propData4.pickey)
+      //     .delete()
+      //     .then(function() {
+      //       console.log("File deleted successfully");
+      //     })
+      //     .catch(function(error) {
+      //       console.log("Uh-oh, an error occurred!");
+      //     });
+      // }
 
       this.imageFiles = []; //圖片螢幕顯示部分，需清除
-      // document.getElementById("inputimage").value = ""; //input type=file 清空檔名
-      this.$refs.fileInput.value = ""; //input type=file 清空檔名
+      document.getElementById("inputimage").value = ""; //input type=file 清空檔名
+      // this.$refs.fileInput.value = ""; //input type=file 清空檔名
       this.progress = 0; //進度歸零
       this.e1 = 1;
       this.$emit("listenToChild4", false);

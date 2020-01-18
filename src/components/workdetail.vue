@@ -86,7 +86,7 @@
                           <v-list-item-title @click="ProcessAdd(item,propData.id,false,index)">修改</v-list-item-title>
                         </v-list-item>
                         <v-list-item>
-                          <v-list-item-title>刪除</v-list-item-title>
+                          <v-list-item-title @click="ProcessDelete(item,propData.id,index)">刪除</v-list-item-title>
                         </v-list-item>
                       </v-list>
                     </v-menu>
@@ -160,7 +160,7 @@
 import workdetailEdit from "./workdetailEdit";
 import workProcessAdd from "./workProcessAdd";
 
-import { dbFirestore, databaseName } from "@/fb";
+import { dbFirestore, dbStorage, databaseName } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
 
@@ -245,8 +245,12 @@ export default {
       // console.log(item,nodeid,index)
       this.ProcessNodeId = nodeid;
       this.ProcessItemIndex = index;
-      //錯錯錯錯 拷貝一份，送子component處理 錯
-      this.ProcessAddData = item;
+      if (add) {
+        //新增
+        this.ProcessAddData = Object.assign({}, item);
+      } else {
+        this.ProcessAddData = item;
+      }
       console.log(this.ProcessAddData);
     },
 
@@ -259,7 +263,7 @@ export default {
 
       if (add) {
         //新增時
-        this.propData.process.push(childData);
+        this.propData.process.unshift(childData);
 
         console.log("propData", this.propData);
       } else {
@@ -291,6 +295,47 @@ export default {
         .catch(function(error) {
           console.log("Uh-oh, an error occurred!");
         });
+    },
+
+    //刪除一筆填報進度
+    ProcessDelete(item, nodeid, index) {
+      console.log(this.propData, item, nodeid, index);
+      this.$dialog["warning"]({
+        title: "警告",
+        text: "確定要刪除這個進度嗎？",
+        persistent: false
+      }).then(res => {
+        if (res) {
+          let updateData = {
+            //因有多餘的 object key，db 只更新必要的，故重新指定
+            process: this.propData.process //db的日期欄位太複雜無法 copy，要用指定的
+          };
+          //設定新物件後再刪除
+          updateData.process.splice(index, 1);
+          //  console.log(updateData)
+          // 更新資料庫
+          dbFirestore
+            .collection(databaseName)
+            .doc(nodeid)
+            .update(updateData)
+            .then(() => {
+              console.log("Document successfully Update!");
+            })
+            .catch(function(error) {
+              console.log("Uh-oh, an error occurred!");
+            });
+          console.log(item.pickey);
+          if (item.pickey != "") {
+            dbStorage
+              .ref()
+              .child(item.pickey)
+              .delete();
+          }
+        }
+      });
+
+      this.ProcessAddDialog = true;
+      return false;
     },
 
     //=============PDF============

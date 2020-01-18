@@ -6,7 +6,7 @@
           <v-text-field label="關鍵字搜尋..." v-model="searchword"></v-text-field>
         </v-col>
         <v-col cols="6" sm="6" md="1" class="py-0">
-          <v-btn color="info"  @click="searchFun">搜尋</v-btn>
+          <v-btn color="info" @click="searchFun">搜尋</v-btn>
         </v-col>
         <v-col cols="6" sm="6" md="2" class="py-0">
           <v-btn color="orange" @click="nearreported">顯示近期填報</v-btn>
@@ -16,9 +16,7 @@
     <img src="@/assets/loading.gif" height="40px" v-show="this.$store.state.loading" />
     <v-tree ref="tree1" :data="treeData" :tpl="tpl" />
 
-
-    
-<!-- =========== 顯示詳細資料 ========= -->
+    <!-- =========== 顯示詳細資料 ========= -->
     <v-container>
       <v-row>
         <v-dialog
@@ -37,7 +35,7 @@
             <!-- <v-btn icon dark text class="mx-2" @click="workDetailDialog = false">
               <v-icon>mdi-content-save-outline</v-icon>
               <span class="title">儲存</span>
-            </v-btn> -->
+            </v-btn>-->
           </v-toolbar>
           <!-- max-width="550" tile="true" outlined -->
           <v-card class="mx-auto" tile>
@@ -55,8 +53,6 @@
       {{ databasemessage }}
       <v-btn dark text @click="snackbar = false">Close</v-btn>
     </v-snackbar>
-
-
   </div>
 </template>
 
@@ -79,8 +75,7 @@ export default {
 
       snackbar: false,
       timeout: 2000,
-      databasemessage: "",
-      
+      databasemessage: ""
     };
   },
   components: {
@@ -120,16 +115,17 @@ export default {
   computed: {},
   methods: {
     nearreported() {
-    //   this.ShowRecentReport = prompt(
-    //     "請輸入幾天內填報才顯示：",
-    //     this.ShowRecentReport
-    //   );
-    //   this.handleData();
+      //   this.ShowRecentReport = prompt(
+      //     "請輸入幾天內填報才顯示：",
+      //     this.ShowRecentReport
+      //   );
+      //   this.handleData();
 
       this.$dialog
         .prompt({
           text: "天數",
-          title: "請輸入幾天內填報才顯示："
+          title: "顯示幾天內填報的資料："
+          // persistent: true
         })
         .then(res => {
           this.ShowRecentReport = res;
@@ -201,13 +197,15 @@ export default {
           //   return {}; // 不顯示
           // }
         }
-        doc.ptitle = doc.title
+        doc.ptitle = doc.title;
 
         if (doc.process) {
           if (doc.process.length > 0) {
             //有填報的才顯示
             // console.log(doc.process[0].t_pgdate,moment().diff(moment(doc.process[0].t_pgdate), "day"))
-            if (
+            if (this.ShowRecentReport == 0) {
+              doc.title = doc.title; //還原
+            } else if (
               moment().diff(moment(doc.process[0].t_pgdate), "day") <=
               this.ShowRecentReport
             ) {
@@ -241,12 +239,13 @@ export default {
             domPropsInnerHTML={node.title}
             onClick={() => {
               ctx.parent.nodeSelected(ctx.props.node);
-            //   console.log(parent);
+              //   console.log(parent);
               let parentEndDate;
               if (parent === null) {
-                parentEndDate = this.$store.getters.projectEndDate
+                parentEndDate = this.$store.getters.projectEndDate;
               } else {
-                parentEndDate = parent.enddate || this.$store.getters.projectEndDate
+                parentEndDate =
+                  parent.enddate || this.$store.getters.projectEndDate;
               }
               this.todo = {
                 // id : node.id ,
@@ -254,11 +253,11 @@ export default {
                 parentEndDate,
                 ...node
               };
-            //   this.$store.commit('setWorkItemData',com_fun.deepCopy(tempArrary))
-            //   console.log(this.$store.getters.workItemData,this.todo)
+              //   this.$store.commit('setWorkItemData',com_fun.deepCopy(tempArrary))
+              //   console.log(this.$store.getters.workItemData,this.todo)
               //   vm.dialogScreen = true;
               //   vm.component_ok = true;
-            //   console.log(this.todo);
+              //   console.log(this.todo);
               this.workDetailDialog = true;
             }}
           />
@@ -267,61 +266,70 @@ export default {
     },
 
     getChildData(childData) {
-      console.log("childData",childData)//從子層傳回父層的資料，進行存檔
+      console.log("childData", childData); //從子層傳回父層的資料，進行存檔
       //=====更改tree Array=======
-      let nodeArray = this.$refs.tree1.getNodes() //取的全部陣列 []
-      nodeArray.forEach(doc=>{
-        if (doc.id === childData.id) { //找到要update的物件
-          doc.title = doc.t_title //還原title
-          doc.depart = childData.depart
-          doc.t_enddate = childData.t_enddate
-          doc.t_startdate = childData.t_startdate
-          doc.status = childData.status
-          doc.process = childData.process
-          if (childData.memo){
-            doc.memo = childData.memo
+      let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
+      nodeArray.forEach(doc => {
+        if (doc.id === childData.id) {
+          //找到要update的物件
+          doc.title = doc.t_title; //還原title
+          doc.depart = childData.depart;
+          doc.t_enddate = childData.t_enddate;
+          doc.t_startdate = childData.t_startdate;
+          doc.status = childData.status;
+          doc.process = childData.process;
+          if (childData.memo) {
+            doc.memo = childData.memo;
           }
 
-              if (doc.process) {
-                doc.process.sort(function(a, b) {
-                  return moment(b.t_pgdate).diff(moment(a.t_pgdate)); //b - a > 0 天數大的排在前面
-                })
-              }
-          
-              let days = "";
-              days = moment(doc.t_enddate).diff(moment(), "day");
-              if (doc.status == "完成"){//完成顯示綠色          
-                doc.title = "<span style='color: green'>" + doc.title + "</span>"}
-              if (doc.status == "不顯示" || doc.status == "停止") return {}; // 不顯示、停止，回傳空物件
+          if (doc.process) {
+            doc.process.sort(function(a, b) {
+              return moment(b.t_pgdate).diff(moment(a.t_pgdate)); //b - a > 0 天數大的排在前面
+            });
+          }
 
-              if (days <= 0 && days !== "") {//剩餘天數為負數，顯示為紅色    
-                doc.title = "<span style='color: red'>" + doc.title + "</span>";
+          let days = "";
+          days = moment(doc.t_enddate).diff(moment(), "day");
+          if (doc.status == "完成") {
+            //完成顯示綠色
+            doc.title = "<span style='color: green'>" + doc.title + "</span>";
+          }
+          if (doc.status == "不顯示" || doc.status == "停止") return {}; // 不顯示、停止，回傳空物件
+
+          if (days <= 0 && days !== "") {
+            //剩餘天數為負數，顯示為紅色
+            doc.title = "<span style='color: red'>" + doc.title + "</span>";
+          }
+          if (moment().isBefore(doc.t_startdate) || doc.t_startdate == "") {
+            //已設定開始日期，但時間未到
+            doc.title = "<span style='color:#BDBDBD'>" + doc.title + "</span>";
+          }
+          if (doc.process) {
+            if (doc.process.length > 0) {
+              //?天有填報的才顯示
+              if (
+                moment().diff(moment(doc.process[0].t_pgdate), "day") <=
+                this.ShowRecentReport
+              ) {
+                doc.title = `${doc.title}-${doc.depart} 【<span class="blue--text">${doc.process[0].t_pgdate} - ${doc.process[0].pgdesc}</span>】`;
               }
-              if (moment().isBefore(doc.t_startdate) || doc.t_startdate == "") { //已設定開始日期，但時間未到          
-                  doc.title ="<span style='color:#BDBDBD'>" + doc.title + "</span>";
-              }
-              if(doc.process) {
-                if(doc.process.length > 0) {//?天有填報的才顯示
-                  if (moment().diff(moment(doc.process[0].t_pgdate), "day") <= this.ShowRecentReport) {
-                    doc.title = `${doc.title}-${doc.depart} 【<span class="blue--text">${doc.process[0].t_pgdate} - ${doc.process[0].pgdesc}</span>】`
-                  }
-                }
-              }
+            }
+          }
         }
-      })
-      this.treeData = com_fun.arrayToJson(nodeArray)
+      });
+      this.treeData = com_fun.arrayToJson(nodeArray);
       // window.location.reload()
 
       //=====更改fireStore資料庫=======
       let data = {
         depart: childData.depart,
-        enddate: new Date( moment(childData.t_enddate) ),//轉換日期物件
-        startdate: new Date( moment(childData.t_startdate) ),
+        enddate: new Date(moment(childData.t_enddate)), //轉換日期物件
+        startdate: new Date(moment(childData.t_startdate)),
         status: childData.status,
         process: childData.process || []
-      }
-      if (childData.memo){
-        data.memo = childData.memo
+      };
+      if (childData.memo) {
+        data.memo = childData.memo;
       }
       // console.log(data)
       dbFirestore
@@ -330,10 +338,7 @@ export default {
         .update(data)
         .then(() => {
           console.log("Document successfully Update!");
-        })
-
-
-
+        });
     }
   }
 };
