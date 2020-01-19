@@ -235,8 +235,6 @@ export default {
         this.handleData(this.db_data);
         return true;
       }
-
-      console.log(this.searchword);
       this.searchword = this.searchword.trim();
       //過濾條件用空白分割成字串，用正則可一個或多個空白去分割
       let arrFilters = this.searchword.split(/\s+/);
@@ -246,6 +244,7 @@ export default {
       const field = ["title", "depart", "status"]; //搜尋這些個欄位
 
       let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
+      console.log(nodeArray)
 
       let matchArr = nodeArray
         .filter(item => {
@@ -303,7 +302,7 @@ export default {
 
       console.log(matchArr);
       this.treeData = com_fun.arrayToTree(matchArr);
-      console.log(this.treeData);
+      // console.log(this.treeData);
     },
 
     //處理樹狀結構，按一下顯示詳細資料

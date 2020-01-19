@@ -290,6 +290,23 @@ export default {
 
 
 
+    //======= 二維陣列轉成一維陣列 ============
+    twoDim_to_oneDim(numbers) {
+        return result = [].concat.apply([], numbers)
+    },
+    // var numbers=[ [1, 3], [5, 7], [9] ];
+    // var result=[].concat.apply([], numbers);
+    // console.log(result);
+    // // [1, 3, 5, 7, 9]
+
+    // var numbers=[ [1, 3], [5, 7], [9] ];
+    // var result=numbers.reduce(function(previousValue, currentValue, currentIndex, array){
+    //     return previousValue.concat(currentValue);
+    // }, []);
+    // console.log(result);
+    // [1, 3, 5, 7, 9]
+
+
     RemoveHTML(strText) {
         const regEx = /<[^>]*>/g;
         return strText.replace(regEx, "");
