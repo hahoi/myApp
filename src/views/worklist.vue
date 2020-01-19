@@ -114,13 +114,8 @@ export default {
   watch: {},
   computed: {},
   methods: {
+    //顯示幾天內填報的資料
     nearreported() {
-      //   this.ShowRecentReport = prompt(
-      //     "請輸入幾天內填報才顯示：",
-      //     this.ShowRecentReport
-      //   );
-      //   this.handleData();
-
       this.$dialog
         .prompt({
           text: "天數",
@@ -134,6 +129,8 @@ export default {
           }
         });
     },
+
+    //讀取firestore資料
     readData() {
       dbFirestore
         .collection(databaseName)
@@ -145,6 +142,8 @@ export default {
           this.handleData(this.db_data);
         });
     },
+
+    //每個節點顯示狀態
     handleData(handleArrayData) {
       let currentItem = handleArrayData.map(doc => {
         if (!doc.t_title) {
@@ -194,11 +193,7 @@ export default {
         }
         if (moment().isBefore(doc.t_startdate) || doc.t_startdate == "") {
           //已設定開始日期，但時間未到
-          // if (vm.ShowAllitems) {
           doc.title = "<span class='grey--text'>" + doc.title + "</span>";
-          // } else {
-          //   return {}; // 不顯示
-          // }
         }
         doc.ptitle = doc.title;
 
@@ -218,17 +213,19 @@ export default {
           }
         }
 
-        return doc;
+        return doc;//array
       });
       // console.log(currentItem)
       this.treeData = com_fun.arrayToJson(currentItem);
       this.$store.commit("setLoading", false);
     },
 
+    // 搜尋
     searchFun() {
       this.$refs.tree1.searchNodes(this.searchword);
     },
 
+    //處理樹狀結構，按一下顯示詳細資料
     tpl(...args) {
       let { 0: node, 1: ctx, 2: parent, 3: index } = args;
       let titleClass = node.selected
@@ -256,11 +253,6 @@ export default {
                 parentEndDate,//加上上層專案結束日期·專案管理用
                 ...node
               };
-              //   this.$store.commit('setWorkItemData',com_fun.deepCopy(tempArrary))
-              //   console.log(this.$store.getters.workItemData,this.todo)
-              //   vm.dialogScreen = true;
-              //   vm.component_ok = true;
-              //   console.log(this.todo);
               this.workDetailDialog = true;
             }}
           />
@@ -272,6 +264,8 @@ export default {
       console.log("childData", childData); //從子層傳回父層的資料，進行存檔
       //=====更改tree Array=======
       let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
+
+      
       nodeArray.forEach(doc => {
         if (doc.id === childData.id) {
           //找到要update的物件
@@ -324,7 +318,7 @@ export default {
       // window.location.reload()
 
       //=====更改fireStore資料庫=======
-      let data = {
+      let data = {//設定符合firestore資料格式
         depart: childData.depart,
         enddate: new Date(moment(childData.t_enddate)), //轉換日期物件
         startdate: new Date(moment(childData.t_startdate)),

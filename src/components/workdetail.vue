@@ -171,9 +171,12 @@ export default {
     return {
       detailEditDialog: false,
       editWorkItemDetailData: {},
+      tempDetailData: {},
 
       ProcessAddDialog: false,
       ProcessAddData: {},
+      tempProcessAddData: {},
+      tempIndex: -1,
       addProcess: true,
       ProcessNodeId: "",
       ProcessItemIndex: -1,
@@ -201,15 +204,29 @@ export default {
   computed: {},
   methods: {
     //==========================================基本資料================================
+    //編輯詳細資料，呼叫子元件
     workItemDetailEdit() {
       this.detailEditDialog = true;
       this.editWorkItemDetailData = this.propData;
+      this.tempDetailData = Object.assign({}, this.propData); //複製一份
       // console.log("editWorkItemDetailData", this.editWorkItemDetailData);
     },
+    //編輯後，子元件返回
     getChildData_ItemDetailEdit(childData) {
       this.detailEditDialog = false;
-      if (!childData) return false;
-      //處理過資料，重新設定
+      if (!childData) {
+        //按取消
+        //還原
+        this.propData.title = this.tempDetailData.t_title; //還原title
+        this.propData.depart = this.tempDetailData.depart;
+        this.propData.t_enddate = this.tempDetailData.t_enddate;
+        this.propData.t_startdate = this.tempDetailData.t_startdate;
+        this.propData.status = this.tempDetailData.status;
+        this.propData.process = this.tempDetailData.process;
+        this.propData.memo = this.tempDetailData.memo;
+        return false;
+      }
+      //被編輯處理過的資料，為符合ＤＢ資料格式，需重新設定
       this.propData.title = this.propData.t_title; //還原title
       this.propData.depart = childData.depart;
       this.propData.t_enddate = childData.t_enddate;
@@ -239,6 +256,7 @@ export default {
       this.dialog = false; //關閉視窗
     },
     //=================================進度填報新增修改===================================
+    //呼叫子元件，注意 process 格式是[{},{}...]
     ProcessAdd(item, nodeid, add, index) {
       this.addProcess = add;
       this.ProcessAddDialog = true;
@@ -249,30 +267,37 @@ export default {
         //新增
         this.ProcessAddData = Object.assign({}, item);
       } else {
+        //修改
+        this.tempProcessAddData = Object.assign({}, item); //複製一份
+        this.tempIndex = index;
         this.ProcessAddData = item;
       }
+      // 傳入資料是{}
       console.log(this.ProcessAddData);
     },
-
+    //子元件返回
     getChildData_ProcessAdd(childData, nodeid, add, index) {
       this.ProcessAddDialog = false;
-      if (!childData) return false; //按取消鍵時
-
-      //日期的轉換非常重要
+      //按取消鍵時
+      if (!childData) {
+        //修改狀態要還原
+        if (!add) {
+          Object.assign(
+            this.propData.process[this.tempIndex],
+            this.tempProcessAddData
+          );
+        }
+        return false;
+      }
+      //日期的轉換非常重要，符合firestore日期格式
       childData.pgdate = new Date(moment(childData.t_pgdate)); //轉換日期物件
 
       if (add) {
         //新增時
         this.propData.process.unshift(childData);
-
-        console.log("propData", this.propData);
       } else {
         // this.propData.process[index]=childData //不可以：用指定array[index]去儲存內容。
         Object.assign(this.propData.process[index], childData);
-
-        // console.log(childData);
-        console.log(this.propData);
-
         //更新螢幕
         this.$forceUpdate();
       }
