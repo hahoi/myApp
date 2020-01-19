@@ -224,6 +224,7 @@ export default {
         this.propData.status = this.tempDetailData.status;
         this.propData.process = this.tempDetailData.process;
         this.propData.memo = this.tempDetailData.memo;
+        console.log("取消",this.propData)
         return false;
       }
       //被編輯處理過的資料，為符合ＤＢ資料格式，需重新設定
@@ -250,7 +251,7 @@ export default {
       } else {
         this.propData.remaindays = "";
       }
-
+        console.log("save",this.propData)
       //傳回 propData 資料給父層處理 資料庫存檔 及 更改陣列物件
       this.$emit("listenToChild", childData);
       this.dialog = false; //關閉視窗

@@ -5,8 +5,11 @@
         <v-col cols="12" sm="12" md="6" class="py-0">
           <v-text-field label="關鍵字搜尋..." v-model="searchword"></v-text-field>
         </v-col>
-        <v-col cols="6" sm="6" md="1" class="py-0">
+        <v-col cols="3" sm="3" md="1" class="py-0">
           <v-btn color="info" @click="searchFun">搜尋</v-btn>
+        </v-col>
+        <v-col cols="3" sm="3" md="1" class="py-0">
+          <v-btn color="blue lighten-4" @click="restsearchFun">重置</v-btn>
         </v-col>
         <v-col cols="6" sm="6" md="2" class="py-0">
           <v-btn color="orange" @click="nearreported">顯示近期填報</v-btn>
@@ -57,7 +60,7 @@
 </template>
 
 <script>
-import { dbFirestore, databaseName } from "@/fb";
+import { dbDatabase, dbFirestore, databaseName } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
 
@@ -109,6 +112,7 @@ export default {
     });
   },
   mounted() {
+    this.getServerTime();
     this.readData();
   },
   watch: {},
@@ -162,7 +166,6 @@ export default {
       }
       //   doc.expanded = true; //全部展開
       //   if(doc.pid == this.$store.state.LevelOneID ) doc.expanded = false //預設只打開第一層
-
       if (doc.enddate)
         doc.t_enddate = moment(doc.enddate.toDate()).format("YYYY-MM-DD");
       if (doc.startdate)
@@ -222,13 +225,16 @@ export default {
           }
         }
       }
-      // console.log(doc)
       return doc; //object
-      // });
-      // console.log(currentItem)
+    },
+    //重置收尋
+    restsearchFun() {
+      this.searchword = "";
+      this.handleData(this.db_data);
+      return true;
     },
 
-    // 搜尋
+    // =======搜尋=======
     searchFun() {
       // this.$refs.tree1.searchNodes(this.searchword);
       if (this.searchword === "") {
@@ -244,7 +250,7 @@ export default {
       const field = ["title", "depart", "status"]; //搜尋這些個欄位
 
       let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
-      console.log(nodeArray)
+      console.log(nodeArray);
 
       let matchArr = nodeArray
         .filter(item => {
@@ -333,6 +339,7 @@ export default {
                 parentEndDate, //加上上層專案結束日期·專案管理用
                 ...node
               };
+
               this.workDetailDialog = true;
             }}
           />
@@ -348,20 +355,74 @@ export default {
       nodeArray.forEach(doc => {
         if (doc.id === childData.id) {
           //找到要update的物件
+          console.log("childData", childData);
           doc.title = doc.t_title; //還原title
           doc.depart = childData.depart;
           doc.t_enddate = childData.t_enddate;
+          console.log("doc.t_enddate", doc.t_enddate);
           doc.t_startdate = childData.t_startdate;
           doc.status = childData.status;
           doc.process = childData.process;
           if (childData.memo) {
             doc.memo = childData.memo;
           }
+          console.log("doc1", doc);
+
           //處理每個節點顯示狀態
-          this.handleNodeData(doc);
+
+          if (doc.process) {
+            doc.process.sort(function(a, b) {
+              return moment(b.t_pgdate).diff(moment(a.t_pgdate)); //b - a > 0 天數大的排在前面
+            });
+          }
+          let days = "";
+          let remdayshow = "";
+          if (moment(doc.t_startdate) < moment() && doc.status != "完成") {
+            doc.remaindays = moment(
+              moment(doc.t_enddate).diff(moment())
+            ).format("D");
+            days = moment(doc.t_enddate).diff(moment(), "day");
+            doc.remaindays = `<span class="red--text">${days}天</span>`;
+          } else {
+            doc.remaindays = "";
+          }
+
+          if (doc.status == "完成") {
+            //完成顯示綠色
+            doc.title = "<span class='green--text'>" + doc.title + "</span>";
+          }
+          if (doc.status == "不顯示" || doc.status == "停止") return {}; // 不顯示、停止，回傳空物件
+
+          if (days <= 0 && days !== "") {
+            //剩餘天數為負數，顯示為紅色
+            doc.title = "<span class='red--text'>" + doc.title + "</span>";
+          }
+          if (moment().isBefore(doc.t_startdate) || doc.t_startdate == "") {
+            //已設定開始日期，但時間未到
+            doc.title = "<span class='grey--text'>" + doc.title + "</span>";
+          }
+          doc.ptitle = doc.title;
+
+          if (doc.process) {
+            if (doc.process.length > 0) {
+              //有填報的才顯示
+              // console.log(doc.process[0].t_pgdate,moment().diff(moment(doc.process[0].t_pgdate), "day"))
+              if (this.ShowRecentReport == 0) {
+                //輸入0時，不顯示
+                doc.title = doc.title; //還原
+              } else if (
+                moment().diff(moment(doc.process[0].t_pgdate), "day") <=
+                this.ShowRecentReport
+              ) {
+                // ?天以內填報的才顯示
+                doc.title = `${doc.title}-${doc.depart} 【<span class="blue--text">${doc.process[0].t_pgdate} - ${doc.process[0].pgdesc}</span>】`;
+              }
+            }
+          }
         }
       });
       this.treeData = com_fun.arrayToJson(nodeArray);
+      this.$forceUpdate();
       // window.location.reload()
 
       //=====更改fireStore資料庫=======
@@ -384,6 +445,17 @@ export default {
         .then(() => {
           console.log("Document successfully Update!");
         });
+    },
+    getServerTime() {
+      //取得系統時間
+      const offsetRef = dbDatabase.ref(".info/serverTimeOffset");
+      offsetRef.on("value", function(snap) {
+        let offset = snap.val();
+        let estimatedServerTimeMs = new Date().getTime() + offset;
+        console.log(moment().format("YYYY-MM-DD hh:ss"));
+        console.log(moment(estimatedServerTimeMs).format("YYYY-MM-DD hh:ss"));
+        return estimatedServerTimeMs;
+      });
     }
   }
 };
