@@ -136,6 +136,7 @@ export default {
 
     //讀取firestore資料
     readData() {
+      this.db_data.length = 0
       dbFirestore
         .collection(databaseName)
         .get()
@@ -143,6 +144,8 @@ export default {
           querySnapshot.forEach(doc => {
             this.db_data.push(doc.data());
           });
+        })
+        .then(() => {
           this.handleData(this.db_data);
         });
     },
@@ -230,7 +233,7 @@ export default {
     //重置收尋
     restsearchFun() {
       this.searchword = "";
-      this.handleData(this.db_data);
+      this.readData();
       return true;
     },
 
@@ -238,7 +241,7 @@ export default {
     searchFun() {
       // this.$refs.tree1.searchNodes(this.searchword);
       if (this.searchword === "") {
-        this.handleData(this.db_data);
+        this.readData();
         return true;
       }
       this.searchword = this.searchword.trim();
@@ -422,7 +425,7 @@ export default {
         }
       });
       this.treeData = com_fun.arrayToJson(nodeArray);
-      this.$forceUpdate();
+      // this.$forceUpdate();
       // window.location.reload()
 
       //=====更改fireStore資料庫=======
