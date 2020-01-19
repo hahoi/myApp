@@ -71,7 +71,7 @@ export default {
       treeData: [],
       db_data: [],
       todo: {},
-      ShowRecentReport: 10,
+      ShowRecentReport: 10, //預設顯示10天內填報資料
 
       snackbar: false,
       timeout: 2000,
@@ -143,86 +143,164 @@ export default {
         });
     },
 
-    //每個節點顯示狀態
+    //處理所有節點顯示狀態
     handleData(handleArrayData) {
       let currentItem = handleArrayData.map(doc => {
-        if (!doc.t_title) {
-          doc.t_title = doc.title; //第一次，先存起來
-        } else {
-          doc.title = doc.t_title; //還原
-        }
-        //   doc.expanded = true; //全部展開
-        //   if(doc.pid == this.$store.state.LevelOneID ) doc.expanded = false //預設只打開第一層
-
-        if (doc.enddate)
-          doc.t_enddate = moment(doc.enddate.toDate()).format("YYYY-MM-DD");
-        if (doc.startdate)
-          doc.t_startdate = moment(doc.startdate.toDate()).format("YYYY-MM-DD");
-
-        if (doc.process) {
-          doc.process.forEach(element => {
-            // console.log(element.pgdate);
-            element.t_pgdate =
-              moment(element.pgdate.toDate()).format("YYYY-MM-DD") || "";
-          });
-          doc.process.sort(function(a, b) {
-            return moment(b.t_pgdate).diff(moment(a.t_pgdate)); //b - a > 0 天數大的排在前面
-          });
-        }
-        let days = "";
-        let remdayshow = "";
-        if (moment(doc.t_startdate) < moment() && doc.status != "完成") {
-          doc.remaindays = moment(moment(doc.t_enddate).diff(moment())).format(
-            "D"
-          );
-          days = moment(doc.t_enddate).diff(moment(), "day");
-          doc.remaindays = `<span class="red--text">${days}天</span>`;
-        } else {
-          doc.remaindays = "";
-        }
-
-        if (doc.status == "完成") {
-          //完成顯示綠色
-          doc.title = "<span class='green--text'>" + doc.title + "</span>";
-        }
-        if (doc.status == "不顯示" || doc.status == "停止") return {}; // 不顯示、停止，回傳空物件
-
-        if (days <= 0 && days !== "") {
-          //剩餘天數為負數，顯示為紅色
-          doc.title = "<span class='red--text'>" + doc.title + "</span>";
-        }
-        if (moment().isBefore(doc.t_startdate) || doc.t_startdate == "") {
-          //已設定開始日期，但時間未到
-          doc.title = "<span class='grey--text'>" + doc.title + "</span>";
-        }
-        doc.ptitle = doc.title;
-
-        if (doc.process) {
-          if (doc.process.length > 0) {
-            //有填報的才顯示
-            // console.log(doc.process[0].t_pgdate,moment().diff(moment(doc.process[0].t_pgdate), "day"))
-            if (this.ShowRecentReport == 0) {
-              doc.title = doc.title; //還原
-            } else if (
-              moment().diff(moment(doc.process[0].t_pgdate), "day") <=
-              this.ShowRecentReport
-            ) {
-              // ?天以內填報的才顯示
-              doc.title = `${doc.title}-${doc.depart} 【<span class="blue--text">${doc.process[0].t_pgdate} - ${doc.process[0].pgdesc}</span>】`;
-            }
-          }
-        }
-
-        return doc;//array
+        return this.handleNodeData(doc);
       });
-      // console.log(currentItem)
       this.treeData = com_fun.arrayToJson(currentItem);
       this.$store.commit("setLoading", false);
     },
 
+    //處理每個節點顯示狀態
+    handleNodeData(doc) {
+      // let currentItem = handleArrayData.map(doc => {
+      if (!doc.t_title) {
+        doc.t_title = doc.title; //第一次，先存起來
+      } else {
+        doc.title = doc.t_title; //還原
+      }
+      //   doc.expanded = true; //全部展開
+      //   if(doc.pid == this.$store.state.LevelOneID ) doc.expanded = false //預設只打開第一層
+
+      if (doc.enddate)
+        doc.t_enddate = moment(doc.enddate.toDate()).format("YYYY-MM-DD");
+      if (doc.startdate)
+        doc.t_startdate = moment(doc.startdate.toDate()).format("YYYY-MM-DD");
+
+      if (doc.process) {
+        doc.process.forEach(element => {
+          // console.log(element.pgdate);
+          element.t_pgdate =
+            moment(element.pgdate.toDate()).format("YYYY-MM-DD") || "";
+        });
+        doc.process.sort(function(a, b) {
+          return moment(b.t_pgdate).diff(moment(a.t_pgdate)); //b - a > 0 天數大的排在前面
+        });
+      }
+      let days = "";
+      let remdayshow = "";
+      if (moment(doc.t_startdate) < moment() && doc.status != "完成") {
+        doc.remaindays = moment(moment(doc.t_enddate).diff(moment())).format(
+          "D"
+        );
+        days = moment(doc.t_enddate).diff(moment(), "day");
+        doc.remaindays = `<span class="red--text">${days}天</span>`;
+      } else {
+        doc.remaindays = "";
+      }
+
+      if (doc.status == "完成") {
+        //完成顯示綠色
+        doc.title = "<span class='green--text'>" + doc.title + "</span>";
+      }
+      if (doc.status == "不顯示" || doc.status == "停止") return {}; // 不顯示、停止，回傳空物件
+
+      if (days <= 0 && days !== "") {
+        //剩餘天數為負數，顯示為紅色
+        doc.title = "<span class='red--text'>" + doc.title + "</span>";
+      }
+      if (moment().isBefore(doc.t_startdate) || doc.t_startdate == "") {
+        //已設定開始日期，但時間未到
+        doc.title = "<span class='grey--text'>" + doc.title + "</span>";
+      }
+      doc.ptitle = doc.title;
+
+      if (doc.process) {
+        if (doc.process.length > 0) {
+          //有填報的才顯示
+          // console.log(doc.process[0].t_pgdate,moment().diff(moment(doc.process[0].t_pgdate), "day"))
+          if (this.ShowRecentReport == 0) {
+            //輸入0時，不顯示
+            doc.title = doc.title; //還原
+          } else if (
+            moment().diff(moment(doc.process[0].t_pgdate), "day") <=
+            this.ShowRecentReport
+          ) {
+            // ?天以內填報的才顯示
+            doc.title = `${doc.title}-${doc.depart} 【<span class="blue--text">${doc.process[0].t_pgdate} - ${doc.process[0].pgdesc}</span>】`;
+          }
+        }
+      }
+      // console.log(doc)
+      return doc; //object
+      // });
+      // console.log(currentItem)
+    },
+
     // 搜尋
     searchFun() {
-      this.$refs.tree1.searchNodes(this.searchword);
+      // this.$refs.tree1.searchNodes(this.searchword);
+      if (this.searchword === "") {
+        this.handleData(this.db_data);
+        return true;
+      }
+
+      console.log(this.searchword);
+      this.searchword = this.searchword.trim();
+      //過濾條件用空白分割成字串，用正則可一個或多個空白去分割
+      let arrFilters = this.searchword.split(/\s+/);
+      console.log(arrFilters);
+
+      //搜尋的欄位
+      const field = ["title", "depart", "status"]; //搜尋這些個欄位
+
+      let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
+
+      let matchArr = nodeArray
+        .filter(item => {
+          let contain_flag = true; // and 都符合
+          let arr_flag = [];
+          let x = arrFilters.length; // flag陣列長度=要搜尋關鍵字的個數
+          while (x--) {
+            arr_flag[x] = false; //先將判斷flag，全部設為 false
+          }
+
+          field.forEach(f => {
+            if (!item[f]) return false;
+            // console.log(f, item[f]);
+            arrFilters.forEach((str, index) => {
+              //搜尋多條件，and 計算
+              let match = item[f].indexOf(str); //-1沒有符合
+              if (match != -1) {
+                //符合
+                arr_flag[index] = true;
+              }
+            });
+          });
+
+          arr_flag.forEach(function(a) {
+            if (a == false) {
+              contain_flag = false; //and
+            }
+          });
+          return contain_flag;
+        })
+        .map(p => {
+          //查到的關鍵字，紅色顯示
+          let cache = JSON.parse(JSON.stringify(p)); //拷貝 p 物件
+          field.forEach(f => {
+            //處理多欄位
+            arrFilters.forEach(s => {
+              //處理多查詢條件
+              let regex = new RegExp(s, "i");
+              let match = cache[f].match(regex);
+              // console.log(match)
+              if (match)
+                cache[f] = cache[f].replace(
+                  regex,
+                  "<span class='red white--text'>" + match[0] + "</span>"
+                );
+            });
+          });
+          // console.log(cache)
+          cache.expanded = true; //全部展開
+          return cache;
+        });
+
+      console.log(matchArr);
+      this.treeData = com_fun.arrayToTree(matchArr);
+      console.log(this.treeData);
     },
 
     //處理樹狀結構，按一下顯示詳細資料
@@ -250,7 +328,7 @@ export default {
               this.todo = {
                 // id : node.id ,
                 // ptitle: node.title,
-                parentEndDate,//加上上層專案結束日期·專案管理用
+                parentEndDate, //加上上層專案結束日期·專案管理用
                 ...node
               };
               this.workDetailDialog = true;
@@ -265,7 +343,6 @@ export default {
       //=====更改tree Array=======
       let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
 
-      
       nodeArray.forEach(doc => {
         if (doc.id === childData.id) {
           //找到要update的物件
@@ -278,47 +355,16 @@ export default {
           if (childData.memo) {
             doc.memo = childData.memo;
           }
-
-          if (doc.process) {
-            doc.process.sort(function(a, b) {
-              return moment(b.t_pgdate).diff(moment(a.t_pgdate)); //b - a > 0 天數大的排在前面
-            });
-          }
-
-          let days = "";
-          days = moment(doc.t_enddate).diff(moment(), "day");
-          if (doc.status == "完成") {
-            //完成顯示綠色
-            doc.title = "<span style='color: green'>" + doc.title + "</span>";
-          }
-          if (doc.status == "不顯示" || doc.status == "停止") return {}; // 不顯示、停止，回傳空物件
-
-          if (days <= 0 && days !== "") {
-            //剩餘天數為負數，顯示為紅色
-            doc.title = "<span style='color: red'>" + doc.title + "</span>";
-          }
-          if (moment().isBefore(doc.t_startdate) || doc.t_startdate == "") {
-            //已設定開始日期，但時間未到
-            doc.title = "<span style='color:#BDBDBD'>" + doc.title + "</span>";
-          }
-          if (doc.process) {
-            if (doc.process.length > 0) {
-              //?天有填報的才顯示
-              if (
-                moment().diff(moment(doc.process[0].t_pgdate), "day") <=
-                this.ShowRecentReport
-              ) {
-                doc.title = `${doc.title}-${doc.depart} 【<span class="blue--text">${doc.process[0].t_pgdate} - ${doc.process[0].pgdesc}</span>】`;
-              }
-            }
-          }
+          //處理每個節點顯示狀態
+          this.handleNodeData(doc);
         }
       });
       this.treeData = com_fun.arrayToJson(nodeArray);
       // window.location.reload()
 
       //=====更改fireStore資料庫=======
-      let data = {//設定符合firestore資料格式
+      let data = {
+        //設定符合firestore資料格式
         depart: childData.depart,
         enddate: new Date(moment(childData.t_enddate)), //轉換日期物件
         startdate: new Date(moment(childData.t_startdate)),

@@ -224,9 +224,9 @@ export default {
   mounted() {},
   watch: {},
   computed: {
-    hasImage() {
-      return this.imageFiles.length > 0 ? true : false;
-    }
+    // hasImage() {
+    //   return this.imageFiles.length > 0 ? true : false;
+    // }
   },
   methods: {
     ProcessSave() {
