@@ -255,20 +255,19 @@ export default {
           while (x--) {
             arr_flag[x] = false; //先將判斷flag，全部設為 false
           }
-
+          // 多個欄位迴圈
           field.forEach(f => {
             if (!item[f]) return false;
-            // console.log(f, item[f]);
+            // 多個搜尋關鍵字迴圈
             arrFilters.forEach((str, index) => {
-              //搜尋多條件，and 計算
               let match = item[f].indexOf(str); //-1沒有符合
               if (match != -1) {
                 //符合
-                arr_flag[index] = true;
+                arr_flag[index] = true; //先把符合的記下來
               }
             });
           });
-
+          //搜尋多條件，and 計算，其中一個是false就不符合
           arr_flag.forEach(function(a) {
             if (a == false) {
               contain_flag = false; //and
@@ -278,11 +277,15 @@ export default {
         })
         .map(p => {
           //查到的關鍵字，紅色顯示
+          if (this.searchword == "") return p; //開始查詢條件空白時，不處理
           let cache = JSON.parse(JSON.stringify(p)); //拷貝 p 物件
           field.forEach(f => {
             //處理多欄位
             arrFilters.forEach(s => {
               //處理多查詢條件
+              if (typeof cache[f] === "undefined") {
+                return false;
+              }
               let regex = new RegExp(s, "i");
               let match = cache[f].match(regex);
               // console.log(match)
