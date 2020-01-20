@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="grey lighten-2">
     <v-toolbar dark color="orange">
       <v-btn dark text class="px-0" @click="recordClose">
         <v-icon>mdi-backspace</v-icon>
@@ -12,8 +12,8 @@
       </v-btn>
     </v-toolbar>
 
-    <v-card height="100vh">
-      <v-card-title>基本資料編輯</v-card-title>
+    <v-card height="100vh" max-width="550"  class="mx-auto">
+      <v-card-title class="pb-0">基本資料編輯</v-card-title>
       <v-card-text>
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-container class="text-center">
@@ -24,7 +24,7 @@
             </div>
 
             <!-- 選擇開始日期 -->
-            <v-col cols="12">
+            <v-col cols="12" class="py-1">
               <v-dialog
                 ref="startDateDialog"
                 v-model="startDateDialogModal"
@@ -59,7 +59,7 @@
             </v-col>
 
             <!-- 選擇結束日期 -->
-            <v-col cols="12">
+            <v-col cols="12" class="py-1">
               <v-dialog
                 ref="endDateDialog"
                 v-model="endDateDialogModal"
@@ -93,11 +93,11 @@
               </v-dialog>
             </v-col>
 
-            <v-col cols="12">
+            <v-col cols="12" class="py-1">
               <v-select :items="depart" v-model="propData2.depart" label="負責單位"></v-select>
             </v-col>
 
-            <v-col cols="12">
+            <v-col cols="12" class="py-1">
               <v-select
                 label="狀態"
                 :items="status"
@@ -105,7 +105,7 @@
                 :rules="[rules.required]"
               ></v-select>
             </v-col>
-            <v-col cols="12">
+            <v-col cols="12" class="py-1">
               <v-textarea
                 v-model="propData2.memo"
                 auto-grow

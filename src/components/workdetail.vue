@@ -224,7 +224,7 @@ export default {
         this.propData.status = this.tempDetailData.status;
         this.propData.process = this.tempDetailData.process;
         this.propData.memo = this.tempDetailData.memo;
-        console.log("取消",this.propData)
+        // console.log("取消",this.propData)
         return false;
       }
       //被編輯處理過的資料，為符合ＤＢ資料格式，需重新設定
@@ -260,7 +260,6 @@ export default {
     //呼叫子元件，注意 process 格式是[{},{}...]
     ProcessAdd(item, nodeid, add, index) {
       this.addProcess = add;
-      this.ProcessAddDialog = true;
       // console.log(item,nodeid,index)
       this.ProcessNodeId = nodeid;
       this.ProcessItemIndex = index;
@@ -273,8 +272,10 @@ export default {
         this.tempIndex = index;
         this.ProcessAddData = item;
       }
-      // 傳入資料是{}
-      console.log(this.ProcessAddData);
+      // 傳入資料是
+      // console.log(this.ProcessAddData);
+      //開啟進度填報視窗
+      this.ProcessAddDialog = true;
     },
     //子元件返回
     getChildData_ProcessAdd(childData, nodeid, add, index) {

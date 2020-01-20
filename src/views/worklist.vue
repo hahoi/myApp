@@ -72,7 +72,6 @@ export default {
       workDetailDialog: false,
       searchword: "",
       treeData: [],//樹狀
-      treeDataArray:[], //一維陣列,處理顯示及搜尋
       db_data: [], //db讀取，一維陣列
       todo: {},
       ShowRecentReport: 10, //預設顯示10天內填報資料
@@ -113,7 +112,7 @@ export default {
     });
   },
   mounted() {
-    this.getServerTime();
+    // this.getServerTime();
     this.readData();
   },
   watch: {},
@@ -124,8 +123,8 @@ export default {
       this.$dialog
         .prompt({
           text: "天數",
-          title: "顯示幾天內填報的資料："
-          // persistent: true
+          title: "顯示幾天內填報的資料：",
+          persistent: false
         })
         .then(res => {
           if (res) {
