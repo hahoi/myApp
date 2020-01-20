@@ -187,6 +187,15 @@ export default {
     recordSave() {
       //存檔
       if (
+        moment(this.propData2.t_enddate).isAfter(this.propData2.parentEndDate)
+      ) {
+        this.ShowAlert(
+          `結束日期 ＞ 專案結束日期！(${this.propData2.parentEndDate})`
+        );
+        return false;
+      }
+
+      if (
         moment(this.propData2.t_startdate).isAfter(this.propData2.t_enddate)
       ) {
         this.ShowAlert("開始日期 ＞ 結束日期！");
@@ -195,11 +204,11 @@ export default {
 
       if (!this.$refs.form.validate()) {
         //有錯
-        console.log(this.$refs.form.validate());
+        // console.log(this.$refs.form.validate());
         this.ShowAlert("輸入資料有錯誤！");
         return false;
       } else {
-        console.log("else", this.$refs.form.validate());
+        // console.log("else", this.$refs.form.validate());
         this.$emit("listenToChild2", this.propData2);
       }
     },

@@ -7,7 +7,7 @@ const state = {
   device: "",
   userId: sessionStorage.getItem('uid')=== "undefined" ? "" : sessionStorage.getItem('uid') ,
   user:null,
-  projectEndDate: "2020-05-31", //專案結束日期
+  projectEndDate: "2025-07-31", //專案結束日期
   loading: true,  // this.$store.state.loading
   LevelOneID:"1234567890abc",  // this.$store.state.LevelOneID 
   //權限控管

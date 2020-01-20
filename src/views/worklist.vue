@@ -71,8 +71,9 @@ export default {
     return {
       workDetailDialog: false,
       searchword: "",
-      treeData: [],
-      db_data: [],
+      treeData: [],//樹狀
+      treeDataArray:[], //一維陣列,處理顯示及搜尋
+      db_data: [], //db讀取，一維陣列
       todo: {},
       ShowRecentReport: 10, //預設顯示10天內填報資料
 
@@ -136,7 +137,8 @@ export default {
 
     //讀取firestore資料
     readData() {
-      this.db_data.length = 0
+      // this.db_data.length = 0
+      this.db_data= [] //清空陣列
       dbFirestore
         .collection(databaseName)
         .get()
@@ -351,25 +353,23 @@ export default {
     },
 
     getChildData(childData) {
-      console.log("childData", childData); //從子層傳回父層的資料，進行存檔
+      // console.log("childData", childData); //從子層傳回父層的資料，進行存檔
       //=====更改tree Array=======
       let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
 
       nodeArray.forEach(doc => {
         if (doc.id === childData.id) {
           //找到要update的物件
-          console.log("childData", childData);
+          // console.log("childData", childData);
           doc.title = doc.t_title; //還原title
           doc.depart = childData.depart;
           doc.t_enddate = childData.t_enddate;
-          console.log("doc.t_enddate", doc.t_enddate);
           doc.t_startdate = childData.t_startdate;
           doc.status = childData.status;
           doc.process = childData.process;
           if (childData.memo) {
             doc.memo = childData.memo;
           }
-          console.log("doc1", doc);
 
           //處理每個節點顯示狀態
 
