@@ -63,9 +63,18 @@
                       name="name"
                     ></v-text-field>
                   </v-col>
-                  <v-col cols="12">
+                  <!-- <v-col cols="12">
                     <v-select :items="department" v-model="editedItem.department" label="單位名稱"></v-select>
+                  </v-col>-->
+
+                  <v-col cols="12">
+                    <v-autocomplete
+                      v-model="editedItem.department"
+                      :items="department"
+                      label="單位名稱"
+                    ></v-autocomplete>
                   </v-col>
+
                   <v-col cols="12">
                     <v-text-field label="連絡電話" v-model="editedItem.telphone" name="telphone"></v-text-field>
                   </v-col>
@@ -96,7 +105,7 @@
     <template v-slot:item.action="{ item }">
       <v-menu bottom>
         <template v-slot:activator="{ on }">
-          <v-btn icon v-on="on">
+          <v-btn class="red--text" icon v-on="on">
             <v-icon>mdi-dots-vertical</v-icon>
           </v-btn>
         </template>

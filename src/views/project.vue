@@ -40,6 +40,8 @@
 <script>
 import { dbFirestore, dbStorage, databaseName } from "@/fb";
 import com_fun from "../utils/function";
+import moment from "moment";
+
 export default {
   name: "project",
   data() {
@@ -183,8 +185,8 @@ export default {
         pid: node.id,
         expanded: true,
         depart: "", //設定初值，db在update時有key name才不會出錯
-        enddate: new Date(),
-        startdate: new Date(),
+        enddate: new Date(moment()), //轉換日期物件
+        startdate: new Date(moment()), //轉換日期物件
         status: "",
         process: []
         // remaindays: 0,

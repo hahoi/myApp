@@ -201,7 +201,8 @@ export default {
   created() {},
   mounted() {},
   watch: {},
-  computed: {},
+  computed: {
+  },
   methods: {
     //==========================================基本資料================================
     //編輯詳細資料，呼叫子元件
@@ -251,7 +252,7 @@ export default {
       } else {
         this.propData.remaindays = "";
       }
-        console.log("save",this.propData)
+      console.log("save", this.propData);
       //傳回 propData 資料給父層處理 資料庫存檔 及 更改陣列物件
       this.$emit("listenToChild", childData);
       this.dialog = false; //關閉視窗

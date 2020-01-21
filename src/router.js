@@ -15,6 +15,12 @@ export const powerRouter = [
     meta: { title: 'Main' },
     children: [
       {
+        path: '/Pcalendar',
+        // name: 'Pcalendar',
+        component: () => import('@/views/Pcalendar'),
+        meta: { title: '期程檢核', role: '期程檢核', icon: "mdi-home" }
+      },
+      {
         path: '/project',
         // name: 'project',
         component: () => import('@/views/project'),

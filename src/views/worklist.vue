@@ -3,12 +3,12 @@
     <v-container>
       <v-row>
         <v-col cols="12" sm="12" md="6" class="py-0">
-          <v-text-field label="關鍵字搜尋..." v-model="searchword"></v-text-field>
+          <v-text-field label="關鍵字搜尋..." v-model="searchword" ></v-text-field>
         </v-col>
-        <v-col cols="3" sm="3" md="1" class="py-0">
+        <v-col cols="3" sm="3" md="2" class="py-0">
           <v-btn color="info" @click="searchFun">搜尋</v-btn>
         </v-col>
-        <v-col cols="3" sm="3" md="1" class="py-0">
+        <v-col cols="3" sm="3" md="2" class="py-0 pl-0 pr-5">
           <v-btn color="blue lighten-4" @click="restsearchFun">重置</v-btn>
         </v-col>
         <v-col cols="6" sm="6" md="2" class="py-0">
@@ -245,16 +245,18 @@ export default {
         this.readData();
         return true;
       }
+
+      
       this.searchword = this.searchword.trim();
       //過濾條件用空白分割成字串，用正則可一個或多個空白去分割
       let arrFilters = this.searchword.split(/\s+/);
-      console.log(arrFilters);
+      // console.log(arrFilters);
 
       //搜尋的欄位
       const field = ["title", "depart", "status"]; //搜尋這些個欄位
 
       let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
-      console.log(nodeArray);
+      // console.log(nodeArray);
 
       let matchArr = nodeArray
         .filter(item => {
@@ -310,7 +312,7 @@ export default {
           return cache;
         });
 
-      console.log(matchArr);
+      // console.log(matchArr);
       this.treeData = com_fun.arrayToTree(matchArr);
       // console.log(this.treeData);
     },
@@ -334,13 +336,14 @@ export default {
               if (parent === null) {
                 parentEndDate = this.$store.getters.projectEndDate;
               } else {
+                //要轉成文字日期
                 parentEndDate =
-                  parent.enddate || this.$store.getters.projectEndDate;
+                  parent.t_enddate || this.$store.getters.projectEndDate;
               }
               this.todo = {
                 // id : node.id ,
                 // ptitle: node.title,
-                parentEndDate, //加上上層專案結束日期·專案管理用
+                parentEndDate, //加上上層專案結束日期·專案管理用，要轉成文字日期
                 ...node
               };
 
@@ -378,11 +381,7 @@ export default {
             });
           }
           let days = "";
-          let remdayshow = "";
           if (moment(doc.t_startdate) < moment() && doc.status != "完成") {
-            doc.remaindays = moment(
-              moment(doc.t_enddate).diff(moment())
-            ).format("D");
             days = moment(doc.t_enddate).diff(moment(), "day");
             doc.remaindays = `<span class="red--text">${days}天</span>`;
           } else {
