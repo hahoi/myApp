@@ -7,20 +7,37 @@
 </template>
 
 <script>
+import { dbFirestore, dbStorage, databaseName } from "@/fb";
   export default {
     name: "",
     data () {
       return {
-
+        TLFM_data:[],
       }
     },
     components: {
 
     },
     created() {
-
+    dbFirestore
+      .collection(databaseName)
+      .get()
+      .then(querySnapshot => {
+        querySnapshot.forEach(doc => {
+          this.TLFM_data.push(doc.data());
+        });
+      })
+      .then(()=>{
+        this.TLFM_data.forEach(item=>{
+          console.log(item)
+        })
+        
+      })
+      
     },
     mounted() {
+
+
 
     },
     watch: {
