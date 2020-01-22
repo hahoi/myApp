@@ -95,18 +95,21 @@ export default {
           this.databasemessage =
             this.$store.getters.user.name + " 正在新增資料！";
           this.snackbar = true;
+          console.log('added data: ', change.doc.data())
         }
         if (change.type === "modified") {
           // console.log("modified");
           this.databasemessage =
             this.$store.getters.user.name + " 已經修改資料！";
           this.snackbar = true;
+          console.log('modified data: ', change.doc.data())
         }
         if (change.type === "removed") {
           // console.log("removed");
           this.databasemessage =
             this.$store.getters.user.name + " 已經刪除資料！";
           this.snackbar = true;
+          console.log('removed data: ', change.doc.data())
         }
       });
     });

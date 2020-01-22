@@ -48,7 +48,7 @@ export const powerRouter = [
         path: '/page1',
         // name: 'page1',
         component: () => import('@/views/page1'),
-        meta: { title: '第一頁', role: '第一頁', icon: "mdi-home" }
+        meta: { title: '資料庫結構練習', role: '資料庫結構練習', icon: "mdi-home" }
       },
       {
         path: '/page2',
