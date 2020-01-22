@@ -34,14 +34,15 @@
       </v-card-text>
 
       <v-card-actions>
-        <v-btn text color="orange" @click="workItemDetailEdit">編輯</v-btn>
+        <!-- 單位填報不可編輯基本資料 -->
+        <!-- <v-btn text color="orange" @click="workItemDetailEdit">編輯</v-btn> -->
         <v-spacer></v-spacer>
-        <v-btn text color="indigo" @click="ProcessAdd(newProcess,propData.id,true,-1)">進度填報</v-btn>
+        <v-btn color="indigo" dark @click="ProcessAdd(newProcess,propData.id,true,-1)">進度填報</v-btn>
       </v-card-actions>
     </v-card>
 
     <!-- ============================ 基本資料編輯 ======================== -->
-    <v-dialog
+    <!-- <v-dialog
       v-model="detailEditDialog"
       fullscreen
       hide-overlay
@@ -51,7 +52,7 @@
         :propData2="editWorkItemDetailData"
         @listenToChild2="getChildData_ItemDetailEdit"
       ></workdetailEdit>
-    </v-dialog>
+    </v-dialog> -->
 
     <!-- =============================顯示填報進度列表============================ -->
     <v-card
@@ -80,8 +81,9 @@
                       <template v-slot:activator="{ on }">
                         <v-btn text v-on="on" class="text-left px-0">{{item.t_pgdate }}</v-btn>
                       </template>
-
-                      <v-list>
+                      <!-- 單位填報不同處 -->
+                      <!-- 一天之內顯示此按鈕 -->
+                      <v-list v-if="item.showEdit">
                         <v-list-item>
                           <v-list-item-title @click="ProcessAdd(item,propData.id,false,index)">修改</v-list-item-title>
                         </v-list-item>
@@ -123,7 +125,7 @@
         :addProcess="addProcess"
         :ProcessNodeId="ProcessNodeId"
         :ProcessItemIndex="ProcessItemIndex"
-        :ifProgressReport= false
+        :ifProgressReport = true
         @listenToChild4="getChildData_ProcessAdd"
       ></workProcessAdd>
     </v-dialog>
@@ -158,7 +160,7 @@
 
 
 <script>
-import workdetailEdit from "./workdetailEdit";
+// import workdetailEdit from "./workdetailEdit";
 import workProcessAdd from "./workProcessAdd";
 
 import { dbFirestore, dbStorage, databaseName } from "@/fb";
@@ -166,13 +168,13 @@ import com_fun from "../utils/function";
 import moment from "moment";
 
 export default {
-  name: "workdetail",
+  name: "ProgressReportDetail",
   props: ["propData"],
   data() {
     return {
-      detailEditDialog: false,
-      editWorkItemDetailData: {},
-      tempDetailData: {},
+      // detailEditDialog: false,
+      // editWorkItemDetailData: {},
+      // tempDetailData: {},
 
       ProcessAddDialog: false,
       ProcessAddData: {},
@@ -196,68 +198,67 @@ export default {
     };
   },
   components: {
-    workdetailEdit,
+    // workdetailEdit,
     workProcessAdd
   },
   created() {},
   mounted() {},
   watch: {},
-  computed: {
-  },
+  computed: {},
   methods: {
-    //==========================================基本資料================================
-    //編輯詳細資料，呼叫子元件
-    workItemDetailEdit() {
-      this.detailEditDialog = true;
-      this.editWorkItemDetailData = this.propData;
-      this.tempDetailData = Object.assign({}, this.propData); //複製一份
-      // console.log("editWorkItemDetailData", this.editWorkItemDetailData);
-    },
-    //編輯後，子元件返回
-    getChildData_ItemDetailEdit(childData) {
-      this.detailEditDialog = false;
-      if (!childData) {
-        //按取消
-        //還原
-        this.propData.title = this.tempDetailData.t_title; //還原title
-        this.propData.depart = this.tempDetailData.depart;
-        this.propData.t_enddate = this.tempDetailData.t_enddate;
-        this.propData.t_startdate = this.tempDetailData.t_startdate;
-        this.propData.status = this.tempDetailData.status;
-        this.propData.process = this.tempDetailData.process;
-        this.propData.memo = this.tempDetailData.memo;
-        // console.log("取消",this.propData)
-        return false;
-      }
-      //被編輯處理過的資料，為符合ＤＢ資料格式，需重新設定
-      this.propData.title = this.propData.t_title; //還原title
-      this.propData.depart = childData.depart;
-      this.propData.t_enddate = childData.t_enddate;
-      this.propData.t_startdate = childData.t_startdate;
-      this.propData.status = childData.status;
-      this.propData.process = childData.process;
-      if (childData.memo) {
-        this.propData.memo = childData.memo;
-      }
-      let days = "";
-      let remdayshow = "";
-      if (
-        moment(this.propData.t_startdate) < moment() &&
-        this.propData.status != "完成"
-      ) {
-        this.propData.remaindays = moment(
-          moment(this.propData.t_enddate).diff(moment())
-        ).format("D");
-        days = moment(this.propData.t_enddate).diff(moment(), "day");
-        this.propData.remaindays = `<span class="red--text">${days}天</span>`;
-      } else {
-        this.propData.remaindays = "";
-      }
-      console.log("save", this.propData);
-      //傳回 propData 資料給父層處理 資料庫存檔 及 更改陣列物件
-      this.$emit("listenToChild", childData);
-      this.dialog = false; //關閉視窗
-    },
+    // //==========================================基本資料================================
+    // //編輯詳細資料，呼叫子元件
+    // workItemDetailEdit() {
+    //   this.detailEditDialog = true;
+    //   this.editWorkItemDetailData = this.propData;
+    //   this.tempDetailData = Object.assign({}, this.propData); //複製一份
+    //   // console.log("editWorkItemDetailData", this.editWorkItemDetailData);
+    // },
+    // //編輯後，子元件返回
+    // getChildData_ItemDetailEdit(childData) {
+    //   this.detailEditDialog = false;
+    //   if (!childData) {
+    //     //按取消
+    //     //還原
+    //     this.propData.title = this.tempDetailData.t_title; //還原title
+    //     this.propData.depart = this.tempDetailData.depart;
+    //     this.propData.t_enddate = this.tempDetailData.t_enddate;
+    //     this.propData.t_startdate = this.tempDetailData.t_startdate;
+    //     this.propData.status = this.tempDetailData.status;
+    //     this.propData.process = this.tempDetailData.process;
+    //     this.propData.memo = this.tempDetailData.memo;
+    //     // console.log("取消",this.propData)
+    //     return false;
+    //   }
+    //   //被編輯處理過的資料，為符合ＤＢ資料格式，需重新設定
+    //   this.propData.title = this.propData.t_title; //還原title
+    //   this.propData.depart = childData.depart;
+    //   this.propData.t_enddate = childData.t_enddate;
+    //   this.propData.t_startdate = childData.t_startdate;
+    //   this.propData.status = childData.status;
+    //   this.propData.process = childData.process;
+    //   if (childData.memo) {
+    //     this.propData.memo = childData.memo;
+    //   }
+    //   let days = "";
+    //   let remdayshow = "";
+    //   if (
+    //     moment(this.propData.t_startdate) < moment() &&
+    //     this.propData.status != "完成"
+    //   ) {
+    //     this.propData.remaindays = moment(
+    //       moment(this.propData.t_enddate).diff(moment())
+    //     ).format("D");
+    //     days = moment(this.propData.t_enddate).diff(moment(), "day");
+    //     this.propData.remaindays = `<span class="red--text">${days}天</span>`;
+    //   } else {
+    //     this.propData.remaindays = "";
+    //   }
+    //   console.log("save", this.propData);
+    //   //傳回 propData 資料給父層處理 資料庫存檔 及 更改陣列物件
+    //   this.$emit("listenToChild", childData);
+    //   this.dialog = false; //關閉視窗
+    // },
     //=================================進度填報新增修改===================================
     //呼叫子元件，注意 process 格式是[{},{}...]
     ProcessAdd(item, nodeid, add, index) {
@@ -388,6 +389,18 @@ export default {
       if (Iframe) {
         Iframe.height = iheight + "px";
       }
+    },
+    getServerTime() {
+      // console.log(moment().format("YYYY-MM-DD hh:ss"));
+      //取得伺服器系統時間
+      const offsetRef = dbDatabase.ref(".info/serverTimeOffset");
+      offsetRef.on("value", function(snap) {
+        let offset = snap.val();
+        let estimatedServerTimeMs = new Date().getTime() + offset;
+        // console.log(moment(estimatedServerTimeMs).format("YYYY-MM-DD hh:ss"));
+        // console.log(dbFirestore.FieldValue.serverTimestamp())//更新資料時取得伺服器系統時間
+        return estimatedServerTimeMs;
+      });
     }
   }
 };

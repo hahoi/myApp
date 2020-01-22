@@ -7,11 +7,10 @@
       </v-btn>
       <v-spacer></v-spacer>
       <span class="headline lime--text">{{addProcess ? "新增" : "修改" }}</span>
-            <v-spacer></v-spacer>
-
+      <v-spacer></v-spacer>
     </v-toolbar>
 
-    <v-card height="100vh" max-width="550"  class="mx-auto">
+    <v-card height="100vh" max-width="550" class="mx-auto">
       <v-card-text class="py-0">
         <v-form ref="form" v-model="valid" lazy-validation>
           <v-container class="text-center pb-0">
@@ -21,7 +20,17 @@
               </v-overlay>
             </div>
 
-            <v-col cols="12" class="py-0">
+            <!-- 單位填報時，填報日期不能修改 -->
+            <v-col cols="12" class="py-0" v-if="ifProgressReport">
+              <v-text-field
+                v-model="propData4.t_pgdate"
+                label="填報日期"
+                :rules="[rules.required]"
+                readonly
+              ></v-text-field>
+            </v-col>
+            <!-- v-else 管理者可以修改填報日期 -->
+            <v-col cols="12" class="py-0" v-else>
               <v-dialog
                 ref="startDateDialog"
                 v-model="startDateDialogModal"
@@ -87,14 +96,20 @@
 
           <v-stepper-items>
             <v-stepper-content step="1">
-              <v-card class="mb-2" color="grey lighten-2" height="150"  align="center" justify="center">
+              <v-card
+                class="mb-2"
+                color="grey lighten-2"
+                height="150"
+                align="center"
+                justify="center"
+              >
                 <v-card-text>
                   <!-- 有圖片不是pdf，顯示圖片 -->
                   <div v-if="propData4.cfmpic != '' &&　!propData4.pdf" class="flex">
                     <v-img :src="propData4.cfmpic" max-width="100" />
                   </div>
                   <div v-if="propData4.pdf">PDF</div>
-                  <span id="progress" v-if="progress > 0 ">
+                  <!-- <span id="progress" v-if="progress > 0 ">
                     <v-progress-circular
                       :size="100"
                       :width="15"
@@ -102,7 +117,7 @@
                       :value="progress"
                       color="primary"
                     >{{ progress }}</v-progress-circular>
-                  </span>
+                  </span>-->
 
                   <input
                     id="inputimage"
@@ -118,36 +133,48 @@
             </v-stepper-content>
 
             <v-stepper-content step="2">
-              <v-card class="mb-2" color="grey lighten-2" height="150"  align="center" justify="center">
-                <v-card-text>
-                <div v-for="(item,key) in imageFiles">
-                  <span class="delbtn" @click="delImage(key)">
-                    <v-icon large color>mdi-delete-forever</v-icon>
-                  </span>
-                  {{item.filename}}
-                  <br />
-                  <div>
-                    <v-img :src="item.imageDataUrl" max-width="100" />
-                    <!-- <img v-bind:src="item.imageDataUrl" style="width:100px" /> -->
-                    <br />
-                    <!-- <input v-model="item.discription" placeholder="請輸入圖片說明"><br> -->
-                    <div v-if="item.GPSLatitude">
-                      緯度：{{item.GPSLatitude}}
-                      <br />
-                      經度：{{item.GPSLongitude}}
-                    </div>
-                  </div>
-                  <!-- <pre>{{item.EXIF}}</pre> -->
-                </div>
-                <span id="progress" v-if="progress > 0 ">
-                  <v-progress-circular
-                    :size="100"
-                    :width="15"
-                    :rotate="-90"
-                    :value="progress"
-                    color="primary"
-                  >{{ progress }}</v-progress-circular>
-                </span>
+              <v-card
+                class="mb-2"
+                color="grey lighten-2"
+                height="150"
+                align="center"
+                justify="center"
+              >
+                <v-card-text class="py-0">
+                  <v-row class="pa-0">
+                    <v-col cols="8" class="pa-0">
+                      <div v-for="(item,key) in imageFiles">
+                        <span class="delbtn" @click="delImage(key)">
+                          <v-icon large color>mdi-delete-forever</v-icon>
+                        </span>
+                        {{item.filename}}
+                        <br />
+                        <div>
+                          <v-img :src="item.imageDataUrl" max-width="100" />
+                          <!-- <img v-bind:src="item.imageDataUrl" style="width:100px" /> -->
+                          <br />
+                          <!-- <input v-model="item.discription" placeholder="請輸入圖片說明"><br> -->
+                          <div v-if="item.GPSLatitude">
+                            緯度：{{item.GPSLatitude}}
+                            <br />
+                            經度：{{item.GPSLongitude}}
+                          </div>
+                        </div>
+                        <!-- <pre>{{item.EXIF}}</pre> -->
+                      </div>
+                    </v-col>
+                    <v-col cols="4">
+                      <span id="progress" v-if="progress > 0 ">
+                        <v-progress-circular
+                          :size="80"
+                          :width="10"
+                          :rotate="-90"
+                          :value="progress"
+                          color="primary"
+                        >{{ progress }}</v-progress-circular>
+                      </span>
+                    </v-col>
+                  </v-row>
                 </v-card-text>
               </v-card>
               <v-btn color="primary" @click="uploadImage();">上傳圖檔</v-btn>
@@ -155,22 +182,28 @@
             </v-stepper-content>
 
             <v-stepper-content step="3">
-              <v-card class="mb-2" color="grey lighten-2" height="150"  align="center" justify="center">
+              <v-card
+                class="mb-2"
+                color="grey lighten-2"
+                height="150"
+                align="center"
+                justify="center"
+              >
                 <v-card-text>
-                <!-- 有圖片不是pdf，顯示圖片 -->
-                <div v-if="propData4.cfmpic != '' &&　!propData4.pdf">
-                  <v-img :src="propData4.cfmpic" max-width="100" />
-                </div>
-                <div v-if="propData4.pdf">PDF</div>
-                <span id="progress" v-if="progress > 0 ">
-                  <v-progress-circular
-                    :size="100"
-                    :width="15"
-                    :rotate="-90"
-                    :value="progress"
-                    color="primary"
-                  >{{ progress }}</v-progress-circular>
-                </span>
+                  <!-- 有圖片不是pdf，顯示圖片 -->
+                  <div v-if="propData4.cfmpic != '' &&　!propData4.pdf">
+                    <v-img :src="propData4.cfmpic" max-width="100" />
+                  </div>
+                  <div v-if="propData4.pdf">PDF</div>
+                  <!-- <span id="progress" v-if="progress > 0 ">
+                    <v-progress-circular
+                      :size="100"
+                      :width="15"
+                      :rotate="-90"
+                      :value="progress"
+                      color="primary"
+                    >{{ progress }}</v-progress-circular>
+                  </span>-->
                 </v-card-text>
               </v-card>
               <v-btn color="orange" @click="ProcessSave">完成並存檔</v-btn>
@@ -196,7 +229,13 @@ import com_fun from "../utils/function";
 import moment from "moment";
 export default {
   name: "workProcessAdd",
-  props: ["propData4", "ProcessNodeId", "addProcess", "ProcessItemIndex"],
+  props: [
+    "propData4",
+    "ProcessNodeId",
+    "addProcess",
+    "ProcessItemIndex",
+    "ifProgressReport"
+  ],
   data() {
     return {
       alertResult: "",
@@ -270,7 +309,13 @@ export default {
       // this.$refs.fileInput.value = ""; //input type=file 清空檔名
       this.progress = 0; //進度歸零
       this.e1 = 1;
-      this.$emit("listenToChild4", false);
+      this.$emit(
+        "listenToChild4",
+        false, //傳回資料是 false
+        this.ProcessNodeId,
+        this.addProcess,
+        this.ProcessItemIndex
+      );
     },
 
     // ======================== 選擇佐證資料、照片======================================
