@@ -144,11 +144,11 @@ export default {
       }
       let days = "";
       if (
-        moment(doc.t_startdate) < moment(this.checkDate) &&
+        moment(doc.t_startdate) < moment() &&
         doc.status != "完成"
       ) {
         //計算落後天數
-        days = moment(doc.t_enddate).diff(moment(this.checkDate), "day");
+        days = moment(doc.t_enddate).diff(moment(), "day");
         // console.log(days);
         doc.remaindays = `<span class="red--text">${days}天</span>`;
       } else {
@@ -167,7 +167,7 @@ export default {
         doc.title = `<span class="red--text">${doc.title}</span>`;
       }
       if (
-        moment(this.checkDate).isBefore(doc.t_startdate) ||
+        moment().isBefore(doc.t_startdate) ||
         doc.t_startdate == ""
       ) {
         //已設定開始日期，但時間未到

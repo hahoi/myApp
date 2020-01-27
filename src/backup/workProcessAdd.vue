@@ -19,7 +19,6 @@
                 <v-alert color="red" dark transition="scale-transition">{{ alertResult }}</v-alert>
               </v-overlay>
             </div>
-
             <!-- 單位填報時，填報日期不能修改 -->
             <v-col cols="12" class="py-0" v-if="ifProgressReport">
               <v-text-field

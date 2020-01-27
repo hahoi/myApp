@@ -14,40 +14,64 @@ export const powerRouter = [
     component: () => import('@/views/Main'),
     meta: { title: 'Main' },
     children: [
+      // {
+      //   path: '/ProgressList',
+      //   // name: 'ProgressList',
+      //   component: () => import('@/views/ProgressList'),
+      //   meta: { title: '進度填報', role: '進度填報', icon: "mdi-home" }
+      // },
+      // {
+      //   path: '/Pcalendar',
+      //   // name: 'Pcalendar',
+      //   component: () => import('@/views/Pcalendar'),
+      //   meta: { title: '期程檢核', role: '期程檢核', icon: "mdi-home" }
+      // },
+      // {
+      //   path: '/project',
+      //   // name: 'project',
+      //   component: () => import('@/views/project'),
+      //   meta: { title: '專案管理', role: '專案管理', icon: "mdi-home" }
+      // },
+      // {
+      //   path: '/worklist',
+      //   // name: 'worklist',
+      //   component: () => import('@/views/worklist'),
+      //   meta: { title: '工項管理', role: '工項管理', icon: "mdi-home", divider: true }
+      // },
+      // {
+      //   path: '/treeview',
+      //   // name: 'treeview',
+      //   component: () => import('@/views/treeview'),
+      //   meta: { title: 'treeview', role: 'treeview', icon: "mdi-home" }
+      // },
       {
-        path: '/ProgressList',
-        // name: 'ProgressList',
-        component: () => import('@/views/ProgressList'),
+        path: '/Fillin2',
+        // name: 'Fillin',
+        component: () => import('@/views/Fillin2'),
         meta: { title: '進度填報', role: '進度填報', icon: "mdi-home" }
       },
       {
-        path: '/Pcalendar',
-        // name: 'Pcalendar',
-        component: () => import('@/views/Pcalendar'),
+        path: '/Pcalendar2',
+        // name: 'Pcalendar2',
+        component: () => import('@/views/Pcalendar2'),
         meta: { title: '期程檢核', role: '期程檢核', icon: "mdi-home" }
       },
       {
-        path: '/project',
+        path: '/project2',
         // name: 'project',
-        component: () => import('@/views/project'),
+        component: () => import('@/views/project2'),
         meta: { title: '專案管理', role: '專案管理', icon: "mdi-home" }
       },
       {
-        path: '/worklist',
-        // name: 'worklist',
-        component: () => import('@/views/worklist'),
+        path: '/workItem2',
+        // name: 'workItem',
+        component: () => import('@/views/workItem2'),
         meta: { title: '工項管理', role: '工項管理', icon: "mdi-home", divider: true }
       },
       {
-        path: '/treeview',
-        // name: 'treeview',
-        component: () => import('@/views/treeview'),
-        meta: { title: 'treeview', role: 'treeview', icon: "mdi-home" }
-      },
-      {
-        path: '/page1',
-        // name: 'page1',
-        component: () => import('@/views/page1'),
+        path: '/DBstructureEX',
+        // name: 'DBstructureEX',
+        component: () => import('@/views/DBstructureEX'),
         meta: { title: '資料庫結構練習', role: '資料庫結構練習', icon: "mdi-home" }
       },
       {

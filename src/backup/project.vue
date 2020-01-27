@@ -242,7 +242,7 @@ export default {
                 .then(() => {
                   console.log("資料刪除成功！", node.id, node.process);
                   if (node.process.length > 0) {
-                    let DeleteRef = "/" + "DESIGN" + "/" + node.id + "/";
+                    let DeleteRef = "/" + databaseName + "/" + node.id + "/";
                     this.deleteStorageFile(DeleteRef);
                   }
                   this.$refs.tree1.delNode(node, parent, index);

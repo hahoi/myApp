@@ -14,6 +14,7 @@ const state = {
   // role: null,
   newRouter: [],
   workItemData:{},
+  mustUpdate: false,
 }
 const getters = {
   device: state => state.device,
@@ -24,6 +25,7 @@ const getters = {
   // role: state => state.user.role,
   newRouter: state => state.newRouter,
   workItemData: state => state.workItemData,
+  mustUpdate: state => state.mustUpdate,
 }
 const mutations = {
   setLoading(state,loading){
@@ -46,6 +48,9 @@ const mutations = {
   },
   setWorkItemData(state, data) {
     state.workItemData = data
+  },
+  setmustUpdate(state, data) {
+    state.mustUpdate = data
   },
 
 
