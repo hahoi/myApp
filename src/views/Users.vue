@@ -24,7 +24,7 @@
               </v-toolbar-title>
               <v-spacer></v-spacer>
               <v-toolbar-items>
-                <v-btn dark text @click="dialog = false">儲存</v-btn>
+                <v-btn dark text @click="save">儲存</v-btn>
               </v-toolbar-items>
               <v-btn icon dark @click="dialog = false">
                 <v-icon>mdi-close</v-icon>
