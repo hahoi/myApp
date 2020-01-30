@@ -23,6 +23,7 @@
       </v-row>
     </v-container>
     <v-tree ref="tree1" :data="treeData" :tpl="tpl" />
+          <scroll-up :scroll-duration="1000"></scroll-up>
 
     <!-- =========== 顯示詳細資料 ========= -->
     <v-container>
@@ -65,11 +66,14 @@
 </template>
 
 <script>
+import workItem2Detail from "../components/workItem2Detail.vue";
+
 import { dbDatabase, dbFirestore, databaseName2 } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
+import ScrollUp from "vue-scroll-up";
+import "vue-scroll-up/dist/style.css";
 
-import workItem2Detail from "../components/workItem2Detail.vue";
 export default {
   name: "workItem",
   data() {
@@ -88,7 +92,8 @@ export default {
     };
   },
   components: {
-    workItem2Detail
+    workItem2Detail,
+    ScrollUp
   },
   created() {
     //監聽資料庫變化

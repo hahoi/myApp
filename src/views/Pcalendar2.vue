@@ -35,6 +35,7 @@
           <v-tree ref="tree1" :data="treeData" :tpl="tpl" />
         </v-col>
         <v-spacer></v-spacer>
+        <scroll-up :scroll-duration="1000"></scroll-up>
       </v-row>
     </v-container>
 
@@ -72,6 +73,9 @@ import workItem2DetailReadonly from "../components/workItem2DetailReadonly";
 import { dbDatabase, dbFirestore, databaseName2 } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
+import ScrollUp from "vue-scroll-up";
+import "vue-scroll-up/dist/style.css";
+
 export default {
   name: "",
   data() {
@@ -87,7 +91,8 @@ export default {
     };
   },
   components: {
-    workItem2DetailReadonly
+    workItem2DetailReadonly,
+    ScrollUp
   },
   created() {},
   mounted() {
@@ -135,7 +140,6 @@ export default {
       //預設只打開第一層
       if (doc.pid == this.$store.state.LevelOneID) doc.expanded = false;
 
-      
       let days = "";
       if (
         moment(doc.startDate) < moment(this.checkDate) &&

@@ -12,6 +12,7 @@
     </v-container>
     <img src="@/assets/loading.gif" height="40px" v-show="this.$store.state.loading" />
     <v-tree ref="tree1" :data="treeData" :tpl="tpl" :draggable="true" @drag-node-end="MyDrag" />
+          <scroll-up :scroll-duration="1000"></scroll-up>
     <v-container>
       <v-row>
         <v-spacer></v-spacer>
@@ -42,6 +43,8 @@
 import { dbFirestore, dbStorage, databaseName2 } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
+import ScrollUp from "vue-scroll-up";
+import "vue-scroll-up/dist/style.css";
 
 export default {
   name: "project2",
@@ -59,7 +62,9 @@ export default {
       progressShow: false
     };
   },
-  components: {},
+  components: {
+    ScrollUp
+  },
   created() {
     //監聽資料庫變化
     dbFirestore.collection(databaseName2).onSnapshot(res => {

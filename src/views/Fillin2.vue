@@ -15,7 +15,7 @@
         </v-col>
       </v-row>
     </v-container>
-
+          <scroll-up :scroll-duration="1000" ></scroll-up>
     <!-- =========== 顯示詳細資料 ========= -->
     <v-container>
       <v-row>
@@ -50,6 +50,9 @@ import Fillin2Detail from "../components/Fillin2Detail";
 import { dbDatabase, dbFirestore, databaseName2 } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
+import ScrollUp from "vue-scroll-up";
+import "vue-scroll-up/dist/style.css";
+
 export default {
   name: "",
   data() {
@@ -64,7 +67,8 @@ export default {
     };
   },
   components: {
-    Fillin2Detail
+    Fillin2Detail,
+    ScrollUp
   },
   created() {},
   mounted() {
@@ -198,10 +202,9 @@ export default {
             onClick={() => {
               ctx.parent.nodeSelected(ctx.props.node);
 
-
               //不是負責的單位，不能填報
-              if(this.$store.state.user.department !== node.depart){
-                return false
+              if (this.$store.state.user.department !== node.depart) {
+                return false;
               }
 
               //   console.log(parent);
@@ -235,7 +238,6 @@ export default {
       );
     },
 
-
     //從子層傳回父層的資料，更新螢幕畫面，並進行存檔
     getChildData(childData) {
       console.log("retuen childData", childData);
@@ -260,7 +262,6 @@ export default {
           doc = this.handleNodeData(doc);
         }
       });
-
 
       //讓顯示近期填報資料一致
       this.db_data = nodeArray;
