@@ -270,7 +270,7 @@ export default {
             arr_flag[x] = false; //先將判斷flag，全部設為 false
           }
           // 多個欄位迴圈
-          field.forEach(f => {
+          field.forEach(f => { //每個欄位名稱
             if (!item[f]) return false;
             // 多個搜尋關鍵字迴圈
             arrFilters.forEach((str, index) => {
@@ -287,15 +287,15 @@ export default {
               contain_flag = false; //and
             }
           });
-          return contain_flag;
+          return contain_flag; //已過濾符合條件的陣列 matchArr 
         })
-        .map(p => {
+        .map(p => { 
           //查到的關鍵字，紅色顯示
           if (this.searchword == "") return p; //開始查詢條件空白時，不處理
           let cache = JSON.parse(JSON.stringify(p)); //拷貝 p 物件
-          field.forEach(f => {
+          field.forEach(f => { //每個欄位名稱
             //處理多欄位
-            arrFilters.forEach(s => {
+            arrFilters.forEach(s => { //每個搜尋關鍵字
               //處理多查詢條件
               if (typeof cache[f] === "undefined") {
                 return false;
@@ -312,7 +312,7 @@ export default {
           });
           // console.log(cache)
           cache.expanded = true; //全部展開
-          return cache;
+          return cache; //回傳複製替換過的一份
         });
 
       // console.log(matchArr);

@@ -45,10 +45,10 @@ export const powerRouter = [
         meta: { title: '資料庫結構練習', role: '資料庫結構練習', icon: "mdi-home" }
       },
       {
-        path: '/page2',
-        // name: 'page2',
-        component: () => import('@/views/page2'),
-        meta: { title: '第二頁', role: '第二頁', icon: "mdi-contact-mail"  , divider: true}
+        path: '/MultiDatabase',
+        // name: 'MultiDatabase',
+        component: () => import('@/views/MultiDatabase'),
+        meta: { title: '兩個資料庫', role: '兩個資料庫', icon: "mdi-contact-mail"  , divider: true}
       },
       {
         path: '/department',
