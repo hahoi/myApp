@@ -23,7 +23,7 @@
       </v-row>
     </v-container>
     <v-tree ref="tree1" :data="treeData" :tpl="tpl" />
-          <scroll-up :scroll-duration="1000"></scroll-up>
+    <scroll-up :scroll-duration="1000"></scroll-up>
 
     <!-- =========== 顯示詳細資料 ========= -->
     <v-container>
@@ -218,7 +218,6 @@ export default {
       //給詳細畫面的標題用(不顯示填報進度訊息)
       doc.ptitle = doc.title;
 
-
       //有填報的才顯示
       if (doc.progress && doc.progress.length > 0) {
         //輸入0時，不顯示
@@ -242,7 +241,7 @@ export default {
       return true;
     },
 
-    // =======搜尋=======
+    // ==================搜尋======================
     searchFun() {
       // this.$refs.tree1.searchNodes(this.searchword);
       if (this.searchword === "") {
@@ -255,11 +254,27 @@ export default {
       let arrFilters = this.searchword.split(/\s+/);
       // console.log(arrFilters);
 
-      //搜尋的欄位
-      const field = ["title", "depart", "status"]; //搜尋這些個欄位
-
       let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
-      // console.log(nodeArray);
+
+      //搜尋的欄位，progress是陣列，需特殊處理
+      const field = [
+        "title",
+        "depart",
+        "startDate",
+        "endDate",
+        "status",
+        "progress"
+      ]; //搜尋這些個欄位
+      const progressField = ["pgdate", "pgdesc"]; //progress 搜尋這些個欄位
+
+      //底下程式碼可以搜尋所有的欄位，目前搜尋欄位用指定的
+      //列出所有欄位，field過濾只有是string或是array性質的欄位，才可以搜尋
+      // let field = []
+      // Object.keys(nodeArray[0]).forEach((a)=>{
+      //   if(typeof nodeArray[0][a] === "string" ) field.push(a)
+      //   if(typeof nodeArray[0][a] === "object" ) field.push(a)
+      // })
+      // console.log(field)
 
       let matchArr = nodeArray
         .filter(item => {
@@ -270,16 +285,51 @@ export default {
             arr_flag[x] = false; //先將判斷flag，全部設為 false
           }
           // 多個欄位迴圈
-          field.forEach(f => { //每個欄位名稱
+          field.forEach(f => {
+            //每個欄位名稱
             if (!item[f]) return false;
-            // 多個搜尋關鍵字迴圈
-            arrFilters.forEach((str, index) => {
-              let match = item[f].indexOf(str); //-1沒有符合
-              if (match != -1) {
-                //符合
-                arr_flag[index] = true; //先把符合的記下來
-              }
-            });
+
+            //如果欄位是陣列的話，是陣列並且裡面有值，才需另外處理
+            if (Array.isArray(item[f]) && item[f].length > 0) {
+              // console.log(item[f][0]);
+
+              // 多個搜尋關鍵字迴圈
+              arrFilters.forEach((str, index) => {
+                //pregress陣列有多項，須一一搜尋
+                item[f].forEach(a => {
+                  // // 底下程式碼可以搜尋所有的欄位，目前搜尋欄位用指定的
+                  // Object.keys(a).forEach(b => { //把物件轉換成陣列處理
+                  //   // console.log(a, b, a[b]); //a= progress[...], b= object key ,a[b]=pregress中某個欄為值
+                  //   if (typeof a[b] === "string") {
+                  //     //只有字串欄位才搜尋
+                  //     if (a[b].indexOf(str) != -1) {
+                  //       //符合
+                  //       // console.log(b,index);
+                  //       arr_flag[index] = true; //先把符合的記下來
+                  //       // console.log(arr_flag);
+                  //     }
+                  //   }
+                  // });
+                  progressField.forEach(b => {
+                    //progress 搜尋這些個欄位 ["pgdate","pgdesc"]
+                    if (a[b].indexOf(str) != -1) {
+                      //符合
+                      arr_flag[index] = true; //先把符合的記下來
+                    }
+                  });
+                });
+              });
+            } else {
+              //一般的字串欄位
+              // 多個搜尋關鍵字迴圈
+              arrFilters.forEach((str, index) => {
+                let match = item[f].indexOf(str); //-1沒有符合
+                if (match != -1) {
+                  //符合
+                  arr_flag[index] = true; //先把符合的記下來
+                }
+              });
+            }
           });
           //搜尋多條件，and 計算，其中一個是false就不符合
           arr_flag.forEach(function(a) {
@@ -287,28 +337,76 @@ export default {
               contain_flag = false; //and
             }
           });
-          return contain_flag; //已過濾符合條件的陣列 matchArr 
+          return contain_flag; //已過濾符合條件的陣列 matchArr
         })
-        .map(p => { 
+        .map(p => {
+          // console.log(p);
           //查到的關鍵字，紅色顯示
           if (this.searchword == "") return p; //開始查詢條件空白時，不處理
           let cache = JSON.parse(JSON.stringify(p)); //拷貝 p 物件
-          field.forEach(f => { //每個欄位名稱
-            //處理多欄位
-            arrFilters.forEach(s => { //每個搜尋關鍵字
-              //處理多查詢條件
-              if (typeof cache[f] === "undefined") {
-                return false;
+          field.forEach(f => {
+            // console.log(f, cache[f]);
+            //如果欄位是陣列的話，不管有沒有值，都需另外處理
+            if (Array.isArray(cache[f])) {
+              if (cache[f].length > 0) {
+                //有內容才置換
+                // console.log(cache[f][0]);
+
+                // 多個搜尋關鍵字迴圈
+                arrFilters.forEach(str => {
+                  //pregress陣列有多項，須一一搜尋
+                  cache[f].forEach(a => {
+                    // 底下程式碼可以搜尋所有的欄位，目前搜尋欄位用指定的
+                    // Object.keys(a).forEach(b => { //把物件轉換成陣列處理
+                    //   // console.log(a, b, a[b]); //a= progress[...], b= object key ,a[b]=pregress中某個欄為值
+                    //   if (typeof a[b] === "string") {
+                    //     //只有字串欄位才搜尋並且置換
+                    //     let regex = new RegExp(str, "i");
+                    //     let match = a[b].match(regex);
+                    //     // console.log(match)
+                    //     if (match)
+                    //       a[b] = a[b].replace(
+                    //         regex,
+                    //         "<span class='red white--text'>" + match[0] + "</span>"
+                    //       );
+                    //   }
+                    // });
+                    progressField.forEach(b => {
+                      //progress 搜尋這些個欄位 ["pgdate","pgdesc"]
+                      let regex = new RegExp(str, "i");
+                      let match = a[b].match(regex);
+                      // console.log(match)
+                      if (match)
+                        a[b] = a[b].replace(
+                          regex,
+                          "<span class='red white--text'>" +
+                            match[0] +
+                            "</span>"
+                        );
+                    });
+                  });
+                });
               }
-              let regex = new RegExp(s, "i");
-              let match = cache[f].match(regex);
-              // console.log(match)
-              if (match)
-                cache[f] = cache[f].replace(
-                  regex,
-                  "<span class='red white--text'>" + match[0] + "</span>"
-                );
-            });
+            } else {
+              //一般字串欄位
+              //每個欄位名稱
+              //處理多欄位
+              arrFilters.forEach(s => {
+                //每個搜尋關鍵字
+                //處理多查詢條件
+                if (typeof cache[f] === "undefined") {
+                  return false;
+                }
+                let regex = new RegExp(s, "i");
+                let match = cache[f].match(regex);
+                // console.log(match)
+                if (match)
+                  cache[f] = cache[f].replace(
+                    regex,
+                    "<span class='red white--text'>" + match[0] + "</span>"
+                  );
+              });
+            }
           });
           // console.log(cache)
           cache.expanded = true; //全部展開
@@ -358,7 +456,6 @@ export default {
       );
     },
 
-
     //從子層傳回父層的資料，更新螢幕畫面，並進行存檔
     getChildData(childData) {
       console.log("retuen childData", childData);
@@ -383,7 +480,6 @@ export default {
           doc = this.handleNodeData(doc);
         }
       });
-
 
       //讓顯示近期填報資料一致
       this.db_data = nodeArray;

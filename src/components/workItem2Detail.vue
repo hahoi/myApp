@@ -78,7 +78,7 @@
                   <td class="text-left px-0">
                     <v-menu bottom>
                       <template v-slot:activator="{ on }">
-                        <v-btn text v-on="on" class="text-left px-0">{{item.pgdate }}</v-btn>
+                        <v-btn text v-on="on" class="text-left px-0" v-html="item.pgdate"></v-btn>
                       </template>
 
                       <v-list>
@@ -91,7 +91,7 @@
                       </v-list>
                     </v-menu>
                   </td>
-                  <td class="text-left">{{ item.pgdesc }}</td>
+                  <td class="text-left" v-html="item.pgdesc"></td>
                   <td v-if="item.pdf" class="text-center">
                     <span class="blue--text" @click="openPDF(`${item.cfmpic}`)">檢視</span>
                   </td>
@@ -106,10 +106,8 @@
           </v-simple-table>
         </div>
       </v-card-text>
-
-      <v-card-actions></v-card-actions>
     </v-card>
-
+      <v-card-actions></v-card-actions>
     <!-- ====================填報進度新增修改=================== -->
     <v-dialog
       v-model="ProgressAddDialog"
@@ -193,7 +191,7 @@ export default {
   },
   components: {
     workItem3Edit,
-    workItem4Progress
+    workItem4Progress,
   },
   created() {},
   mounted() {},
