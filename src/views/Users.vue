@@ -112,7 +112,7 @@
 
         <v-list class="text-left">
           <v-list-item>
-            <v-list-item-title @click="editItem(item)">
+            <v-list-item-title @click="editItem(item)" class="blue--text">
               <v-icon small class="mr-2">mdi-pencil-outline</v-icon>編輯使用者資料
             </v-list-item-title>
           </v-list-item>

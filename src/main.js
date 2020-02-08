@@ -5,14 +5,14 @@ import store from './store'
 import router from './router'
 
 import util from './utils/util.js'
-Vue.prototype.$util = util
+Vue.prototype.$util = util //綁定到VUE實例的屬性，可以 this.$util 呼叫使用，不必再import
 
 import VuetifyConfirm from 'vuetify-confirm'
-Vue.use(VuetifyConfirm, { vuetify })
+Vue.use(VuetifyConfirm, { vuetify }) //以 this.$confirm 呼叫
 
 import VuetifyDialog from 'vuetify-dialog'
 import 'vuetify-dialog/dist/vuetify-dialog.css'
-Vue.use(VuetifyDialog, {
+Vue.use(VuetifyDialog, { //以 this.$dialog 呼叫
   context: {
     vuetify
   }
