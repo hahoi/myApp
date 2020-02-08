@@ -54,7 +54,7 @@ export const powerRouter = [
         path: '/department',
         // name: 'department',
         component: () => import('@/views/department'),
-        meta: { title: '單位名稱', role: '單位名稱', icon: "mdi-contact-mail"  , divider: true}
+        meta: { title: '單位管理', role: '單位管理', icon: "mdi-contact-mail"  , divider: true}
       },
 
       {

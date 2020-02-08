@@ -143,7 +143,7 @@
 <script>
 // import slugify from "slugify";
 import moment from "moment";
-import { dbFirestore, dbAuth, dbFunctions, databaseName } from "@/fb";
+import { dbFirestore, dbAuth, dbFunctions, databaseNam2 } from "@/fb";
 import { powerRouter, copyPowerRouter } from "../router";
 
 export default {
@@ -296,19 +296,29 @@ export default {
     deleteItem(item) {
       const index = this.desserts.indexOf(item);
       //刪除前端user表格資料
-      confirm("確定要刪除這筆資料嗎？") && this.desserts.splice(index, 1);
+      // confirm("確定要刪除這筆資料嗎？") && this.desserts.splice(index, 1);
       // console.log(item)
-      //刪除cloud firestore 資料
-      dbFirestore
-        .collection("MyAppUsers")
-        .doc(item.slug)
-        .delete();
-      //刪除Authentication email資料
-      // console.log(item.authId)
-      const AdminDeleteUser = dbFunctions.httpsCallable("AdminDeleteUser");
-      AdminDeleteUser({ uid: item.authId }).then(result => {
-        // console.log(result);
-        return result.data;
+
+      this.$confirm("確定要刪除這筆資料嗎？", {
+        color: "orange",
+        title: "警告"
+      }).then(res => {
+        if (res) {
+          //前端
+          this.desserts.splice(index, 1);
+          //刪除cloud firestore 資料
+          dbFirestore
+            .collection("MyAppUsers")
+            .doc(item.slug)
+            .delete();
+          //刪除Authentication email資料
+          // console.log(item.authId)
+          const AdminDeleteUser = dbFunctions.httpsCallable("AdminDeleteUser");
+          AdminDeleteUser({ uid: item.authId }).then(result => {
+            // console.log(result);
+            return result.data;
+          });
+        }
       });
     },
 

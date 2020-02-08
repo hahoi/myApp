@@ -6,8 +6,6 @@
         <v-divider class="mx-4" inset vertical></v-divider>
         <v-spacer></v-spacer>
 
-   
-
         <!-- 彈跳編輯視窗，因新增slot須放在toolbar裡面，改為全螢幕-->
         <v-dialog v-model="dialog" fullscreen>
           <template v-slot:activator="{ on }">
@@ -22,19 +20,10 @@
               <v-container>
                 <v-row>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.name" label="Dessert name"></v-text-field>
+                    <v-text-field v-model="editedItem.order" label="排列順序"></v-text-field>
                   </v-col>
                   <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.calories" label="Calories"></v-text-field>
-                  </v-col>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.fat" label="Fat (g)"></v-text-field>
-                  </v-col>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.carbs" label="Carbs (g)"></v-text-field>
-                  </v-col>
-                  <v-col cols="12" sm="6" md="4">
-                    <v-text-field v-model="editedItem.protein" label="Protein (g)"></v-text-field>
+                    <v-text-field v-model="editedItem.title" label="單位名稱"></v-text-field>
                   </v-col>
                 </v-row>
               </v-container>
@@ -47,12 +36,11 @@
             </v-card-actions>
           </v-card>
         </v-dialog>
-
       </v-toolbar>
     </template>
     <template v-slot:item.action="{ item }">
-      <v-icon small class="mr-2" @click="editItem(item)">編輯</v-icon>
-      <v-icon small @click="deleteItem(item)">刪除</v-icon>
+      <v-icon small  color="teal" class="mr-2" @click="editItem(item)">edit</v-icon>
+      <v-icon small color="pink" @click="deleteItem(item)">delete</v-icon>
     </template>
     <template v-slot:no-data>
       <v-btn color="primary" @click="initialize">Reset</v-btn>
@@ -61,6 +49,7 @@
 </template>
 
 <script>
+import { dbFirestore } from "@/fb";
 export default {
   name: "",
   data() {
@@ -68,32 +57,23 @@ export default {
       dialog: false,
       headers: [
         {
-          text: "Dessert (100g serving)",
+          text: "順序",
           align: "left",
-          sortable: false,
-          value: "name"
+          sortable: true,
+          value: "order"
         },
-        { text: "Calories", value: "calories" },
-        { text: "Fat (g)", value: "fat" },
-        { text: "Carbs (g)", value: "carbs" },
-        { text: "Protein (g)", value: "protein" },
+        { text: "單位名稱", value: "title" },
         { text: "Actions", value: "action", sortable: false }
       ],
       desserts: [],
       editedIndex: -1,
       editedItem: {
-        name: "",
-        calories: 0,
-        fat: 0,
-        carbs: 0,
-        protein: 0
+        order: "",
+        title: ""
       },
       defaultItem: {
-        name: "",
-        calories: 0,
-        fat: 0,
-        carbs: 0,
-        protein: 0
+        order: "",
+        title: ""
       }
     };
   },
@@ -116,78 +96,20 @@ export default {
   },
   methods: {
     initialize() {
-      this.desserts = [
-        {
-          name: "Frozen Yogurt",
-          calories: 159,
-          fat: 6.0,
-          carbs: 24,
-          protein: 4.0
-        },
-        {
-          name: "Ice cream sandwich",
-          calories: 237,
-          fat: 9.0,
-          carbs: 37,
-          protein: 4.3
-        },
-        {
-          name: "Eclair",
-          calories: 262,
-          fat: 16.0,
-          carbs: 23,
-          protein: 6.0
-        },
-        {
-          name: "Cupcake",
-          calories: 305,
-          fat: 3.7,
-          carbs: 67,
-          protein: 4.3
-        },
-        {
-          name: "Gingerbread",
-          calories: 356,
-          fat: 16.0,
-          carbs: 49,
-          protein: 3.9
-        },
-        {
-          name: "Jelly bean",
-          calories: 375,
-          fat: 0.0,
-          carbs: 94,
-          protein: 0.0
-        },
-        {
-          name: "Lollipop",
-          calories: 392,
-          fat: 0.2,
-          carbs: 98,
-          protein: 0
-        },
-        {
-          name: "Honeycomb",
-          calories: 408,
-          fat: 3.2,
-          carbs: 87,
-          protein: 6.5
-        },
-        {
-          name: "Donut",
-          calories: 452,
-          fat: 25.0,
-          carbs: 51,
-          protein: 4.9
-        },
-        {
-          name: "KitKat",
-          calories: 518,
-          fat: 26.0,
-          carbs: 65,
-          protein: 7
-        }
-      ];
+      dbFirestore
+        .collection("SettingData")
+        .doc("Department") //單位
+        .get()
+        .then(doc => {
+          let temp = doc.data().depart;
+          temp
+            .sort(function(a, b) {
+              return a.order - b.order; //小的排在前面，注意字串排序，用減號 不是 <
+            })
+            .forEach(item => {
+              this.desserts.push(item);
+            });
+        });
     },
 
     editItem(item) {
@@ -198,8 +120,30 @@ export default {
 
     deleteItem(item) {
       const index = this.desserts.indexOf(item);
-      confirm("Are you sure you want to delete this item?") &&
-        this.desserts.splice(index, 1);
+      //   confirm("Are you sure you want to delete this item?") &&
+      //     this.desserts.splice(index, 1);
+
+      this.$confirm("確定要刪除這筆資料嗎？", {
+        color: "orange",
+        title: "警告"
+      }).then(res => {
+        if (res) {
+          //前端
+          this.desserts.splice(index, 1);
+          //刪除cloud firestore 資料
+          let obj_depart = { depart: this.desserts }; //整個陣列更換
+          dbFirestore
+            .collection("SettingData")
+            .doc("Department")
+            .set(obj_depart)
+            .then(() => {
+              console.log("Document successfully delete!");
+            })
+            .catch(function(error) {
+              console.error("Error delete : ", error);
+            });
+        }
+      });
     },
 
     close() {
@@ -211,11 +155,33 @@ export default {
     },
 
     save() {
+      //將資料寫入前台陣列
       if (this.editedIndex > -1) {
+        //==修改==
         Object.assign(this.desserts[this.editedIndex], this.editedItem);
       } else {
+        //==新增==
         this.desserts.push(this.editedItem);
+        this.desserts.sort(function(a, b) {
+          return a.order - b.order; //小的排在前面，注意字串排序，用減號 不是 <
+        });
       }
+
+      let obj_depart = { depart: this.desserts }; //整個陣列更換
+      // 將資料寫入後台資料庫
+      dbFirestore
+        .collection("SettingData")
+        .doc("Department")
+        .set(obj_depart)
+        .then(() => {
+          console.log("Document successfully Update!");
+        })
+        .catch(function(error) {
+          /* eslint-disable no-console */
+          console.error("Error Update document: ", error);
+          /* eslint-enable no-console */
+        });
+
       this.close();
     }
   }
