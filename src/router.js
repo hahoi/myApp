@@ -15,6 +15,12 @@ export const powerRouter = [
     meta: { title: 'Main' },
     children: [
       {
+        path: '/',
+        name: 'Home',
+        component: () => import('@/views/Home'),
+        meta: { title: '首頁', role: '首頁', icon : 'home' , divider: true}
+      },
+      {
         path: '/Fillin2',
         // name: 'Fillin',
         component: () => import('@/views/Fillin2'),
@@ -51,9 +57,15 @@ export const powerRouter = [
         meta: { title: '兩個資料庫', role: '兩個資料庫', icon: "mdi-contact-mail"  , divider: true}
       },
       {
-        path: '/department',
+        path: '/Message',
+        // name: 'Message',
+        component: () => import('@/views/Message'),
+        meta: { title: '訊息管理', role: '訊息管理', icon: "mdi-contact-mail"  }
+      },
+      {
+        path: '/Department',
         // name: 'department',
-        component: () => import('@/views/department'),
+        component: () => import('@/views/Department'),
         meta: { title: '單位管理', role: '單位管理', icon: "mdi-contact-mail"  , divider: true}
       },
 

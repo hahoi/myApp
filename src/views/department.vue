@@ -63,7 +63,7 @@ export default {
           value: "order"
         },
         { text: "單位名稱", value: "title" },
-        { text: "Actions", value: "action", sortable: false }
+        { text: "編輯", value: "action", sortable: false } //這一行特別注意要加入才有編輯功能
       ],
       desserts: [],
       editedIndex: -1,
