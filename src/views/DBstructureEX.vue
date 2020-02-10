@@ -17,6 +17,7 @@
     <h3>集合(主資料)及陣列(子資料)，所有時間欄位改為字串</h3>
     <p></p>
     <v-btn @click="mainTransfer1">主資料庫轉換</v-btn>
+    <v-btn @click="readDatabase3">讀取全部資料</v-btn>
   </div>
 </template>
 
@@ -232,6 +233,21 @@ export default {
               });
           });
         });
+    },
+    readDatabase3(){
+      let temp = [];
+      dbFirestore
+        .collection("TLFMCDV2")
+        .get()
+        .then(querySnapshot => {
+          querySnapshot.forEach(doc => {
+            temp.push(doc.data());
+          });
+        })
+        .then(()=>{
+          console.log(temp)
+        })
+
     }
   }
 };
