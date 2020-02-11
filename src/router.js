@@ -33,6 +33,12 @@ export const powerRouter = [
         meta: { title: '期程檢核', role: '期程檢核', icon: "mdi-home" }
       },
       {
+        path: '/Share',
+        // name: 'Share',
+        component: () => import('@/views/Share'),
+        meta: { title: '合作分享', role: '合作分享', icon: "mdi-home", divider: true}
+      },
+      {
         path: '/project2',
         // name: 'project',
         component: () => import('@/views/project2'),

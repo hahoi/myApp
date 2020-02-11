@@ -105,7 +105,6 @@ export default {
             // return father.pid == "1234567890";   //返回第一层
             return father.pid == 0;           //返回第一层
         });
-        // console.log("json",tree)
         return tree     //返回树形数据
     },
 
@@ -132,6 +131,7 @@ export default {
     arrayToTree(treeArray) {
         let r = []
         let tmpMap = {};
+
         for (let i = 0, l = treeArray.length; i < l; i++) {
             // 以每条数据的id作为obj的key值，数据作为value值存入到一个临时对象里面
             //将nodes数组转成对象类型 array => object {1234567890: treeArray[i] }
@@ -147,6 +147,34 @@ export default {
             } else {
                 //如果没有这个Key值，那就代表没有父级,直接放在最外层 放入一级目录
                 r.push(treeArray[i]);
+            }
+        }
+        return r
+    },
+
+    //=======一維陣列 => 樹狀 ====這個purePush還沒嘗試成功 ============
+    arrayToTreeNew(treeArray) {
+        let r = []
+        let tmpMap = {};
+        const purePush = (aArray, newEntry) => [ ...aArray, newEntry ]
+        
+        for (let i = 0, l = treeArray.length; i < l; i++) {
+            // 以每条数据的id作为obj的key值，数据作为value值存入到一个临时对象里面
+            //将nodes数组转成对象类型 array => object {1234567890: treeArray[i] }
+            tmpMap[treeArray[i]["id"]] = treeArray[i];
+        }
+        for (let i = 0, l = treeArray.length; i < l; i++) {
+            let key = tmpMap[treeArray[i]["pid"]]; //获取每一个子对象的父对象
+
+            //循环每一条数据的pid，假如这个临时对象有这个key值，就代表这个key对应的数据有children，需要Push进去
+            if (key) { //判断父对象是否存在，如果不存在直接将对象放到第一层
+                if (!key["children"]) key["children"] = []; //如果父元素的children对象不存在，则创建数组
+                // key["children"].push(treeArray[i]); //将本对象压入父对象的children数组
+                key["children"] = purePush(key["children"], treeArray[i])
+            } else {
+                //如果没有这个Key值，那就代表没有父级,直接放在最外层 放入一级目录
+                // r.push(treeArray[i]);
+                r = purePush(r,treeArray[i])
             }
         }
         return r

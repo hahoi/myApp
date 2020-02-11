@@ -1,7 +1,7 @@
 <template>
   <div class="tree">
     <v-container>
-      <v-row align="center" justify="space-around">
+      <v-row align="center" justify="space-around" class="mx-0 px-0">
         <div class="text-center mb-4">
           <v-overlay :opacity="0.5" z-index="100" :value="loading">
             <img src="@/assets/loading.gif" style="height:125px" />
@@ -24,7 +24,7 @@
         </v-col>
         <!-- <v-col cols="12" class="py-0">
           <v-btn color="orange" @click="searchCallback">搜尋練習</v-btn>
-        </v-col> -->
+        </v-col>-->
         <!-- <v-img src="@/assets/loading.gif" height="40px" v-show="loading" /> -->
       </v-row>
     </v-container>
@@ -57,7 +57,7 @@
             <v-card-text class="px-3">
               <!-- <v-divider></v-divider> -->
               <!-- 子組件渲染 -->
-              <workItem2Detail :propData="todo" @listenToChild="getChildData"></workItem2Detail>
+              <workItem2DetailReadonly :propData="todo" @listenToChild="getChildData"></workItem2DetailReadonly>
             </v-card-text>
           </v-card>
         </v-dialog>
@@ -72,7 +72,7 @@
 </template>
 
 <script>
-import workItem2Detail from "../components/workItem2Detail.vue";
+import workItem2DetailReadonly from "../components/workItem2DetailReadonly.vue";
 
 import { dbDatabase, dbFirestore, databaseName2 } from "@/fb";
 import com_fun from "../utils/function";
@@ -99,38 +99,10 @@ export default {
     };
   },
   components: {
-    workItem2Detail,
+    workItem2DetailReadonly,
     ScrollUp
   },
-  created() {
-    //監聽資料庫變化
-    dbFirestore.collection(databaseName2).onSnapshot(res => {
-      const changes = res.docChanges();
-      changes.forEach(change => {
-        if (change.type === "added" && !this.loading) {
-          // console.log(this.$store.getters.user.name, "added");
-          this.databasemessage =
-            this.$store.getters.user.name + " 正在新增資料！";
-          this.snackbar = true;
-          console.log("added data: ", change.doc.data());
-        }
-        if (change.type === "modified") {
-          // console.log("modified");
-          this.databasemessage =
-            this.$store.getters.user.name + " 已經修改資料！";
-          this.snackbar = true;
-          console.log("modified data: ", change.doc.data());
-        }
-        if (change.type === "removed") {
-          // console.log("removed");
-          this.databasemessage =
-            this.$store.getters.user.name + " 已經刪除資料！";
-          this.snackbar = true;
-          console.log("removed data: ", change.doc.data());
-        }
-      });
-    });
-  },
+  created() {},
   mounted() {
     // this.getServerTime();
     this.readData();
@@ -167,19 +139,32 @@ export default {
           });
         })
         .then(() => {
+          // console.log(this.db_data) // db_data純一維陣列
           this.handleData(this.db_data);
+          // console.log(this.db_data) //這裡已經有副作用了，db_data 已加入children
         })
         .then(() => {
           this.loading = false;
         });
     },
+    //處理搜尋重置所有節點顯示狀態
+    searchRestData(handleArrayData) {
+      let currentArrayData = handleArrayData.map(doc => {
+        return this.handleNodeData(doc);
+      });
+      return currentArrayData;
+    },
 
     //處理所有節點顯示狀態
     handleData(handleArrayData) {
-      let currentItem = handleArrayData.map(doc => {
+      let currentArrayData = handleArrayData.map(doc => {
         return this.handleNodeData(doc);
       });
-      this.treeData = com_fun.arrayToJson(currentItem);
+      // console.log(currentArrayData)//純一維陣列
+      let temp = [... currentArrayData]
+      this.treeData = com_fun.arrayToTreeNew(temp);
+      console.log(currentArrayData, this.db_data)//已經被加入children
+      return currentArrayData;
     },
 
     //處理每個節點顯示狀態
@@ -261,11 +246,15 @@ export default {
       let arrFilters = this.searchword.split(/\s+/);
       // console.log(arrFilters);
 
-      let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
-      
-      let field = [] //搜尋欄位
-      let progressField = [] //搜尋填報資料欄位
-      if (this.searchProgress === true) { //要搜尋填報資料
+      // let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
+      let nodeArray  = this.searchRestData(this.db_data);
+      console.log(nodeArray)
+    
+
+      let field = []; //搜尋欄位
+      let progressField = []; //搜尋填報資料欄位
+      if (this.searchProgress === true) {
+        //要搜尋填報資料
         //搜尋的欄位，progress是陣列，需特殊處理
         field = [
           "title",
@@ -276,7 +265,8 @@ export default {
           "progress"
         ]; //搜尋這些個欄位
         progressField = ["pgdate", "pgdesc"]; //progress 搜尋這些個欄位
-      } else { //不要搜尋填報資料
+      } else {
+        //不要搜尋填報資料
         field = ["title", "depart", "startDate", "endDate", "status"]; //搜尋這些個欄位
       }
 
@@ -289,7 +279,7 @@ export default {
       // })
       // console.log(field)
 
-      let matchArr = nodeArray
+      let matchArr  = nodeArray
         .filter(item => {
           let contain_flag = true; // and 都符合
           let arr_flag = [];
@@ -425,10 +415,10 @@ export default {
           cache.expanded = true; //全部展開
           return cache; //回傳複製替換過的一份
         });
-
-      // console.log(matchArr);
-      this.treeData = com_fun.arrayToTree(matchArr);
-      // console.log(this.treeData);
+console.table(matchArr)
+      // let temp  = com_fun.arrayToTreeNew(matchArr);
+      // console.table(temp)
+      //  this.treeData = temp
     },
 
     //處理樹狀結構，按一下顯示詳細資料
@@ -564,7 +554,7 @@ export default {
       // b();
       // c();
       // a(c(b));
-      b(a(c))
+      b(a(c));
     }
   }
 };

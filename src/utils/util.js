@@ -18,17 +18,17 @@ export default {
     },
     //yyyy-MM-ddThh-mm-ss.*
     utcToLocal(time) {
-        let formatNum = (num)=>{
-            return num>=10?num:('0'+num)
+        let formatNum = (num) => {
+            return num >= 10 ? num : ('0' + num)
         }
         let arr = time.split(/[^0-9]/)
         let worldDate = new Date(arr[0], arr[1] - 1, arr[2], arr[3], arr[4], arr[5])
         let localDate = new Date(worldDate.getTime() + 8 * 60 * 60 * 1000)
         return formatNum(localDate.getFullYear()) + "-"
-            + formatNum((localDate.getMonth() + 1)) + "-" 
-            + formatNum(localDate.getDate()) + " " 
-            + formatNum(localDate.getHours()) + ":" 
-            + formatNum(localDate.getMinutes()) + ":" 
+            + formatNum((localDate.getMonth() + 1)) + "-"
+            + formatNum(localDate.getDate()) + " "
+            + formatNum(localDate.getHours()) + ":"
+            + formatNum(localDate.getMinutes()) + ":"
             + formatNum(localDate.getSeconds())
     },
     guid() {
@@ -58,7 +58,7 @@ export default {
             status = document.execCommand('copy')
         } catch (e) {
             // console.log(e)
-         }
+        }
         document.body.removeChild(doc)
         return status
     },
@@ -75,8 +75,72 @@ export default {
         windowSize.height = window.innerWeight || document.documentElement.clientHeight || document.body.clientHeight
         return windowSize
     },
-    addHttp(url){
-        return (url.match(/https?:\/\//i)?'':'https://') + url
-    }
+    addHttp(url) {
+        return (url.match(/https?:\/\//i) ? '' : 'https://') + url
+    },
+
+
+    //陣列處理純粹函式
+    //注意它並非回傳長度，而是回傳最終的陣列結果
+    //const purePush = (aArray, newEntry) => [ ...aArray, newEntry ]
+    purePush(aArray, newEntry) {
+        return [...aArray, newEntry]
+    },
+    //注意它並非回傳pop的成員(值)，而是回傳最終的陣列結果
+    //const purePop = aArray => aArray.slice(0, -1)
+    purePop(aArray) {
+        return aArray.slice(0, -1)
+    },
+
+    // shift
+    //注意它並非回傳shift的成員(值)，而是回傳最終的陣列結果
+    // const pureShift = aArray => aArray.slice(1)
+    pureShift(aArray){
+      return aArray.slice(1)     
+    },
+    
+    // unshift
+    //注意它並非回傳長度，而是回傳最終的陣列結果
+    // const pureUnshift = (aArray, newEntry) => [ newEntry, ...aArray ]
+     pureUnshift(aArray, newEntry){
+      return [ newEntry, ...aArray ]
+    },
+    
+    // splice
+    // 這方法完全要使用slice與展開運算符(...)來取代，是所有的純粹函式最難的一個。
+    // const pureSplice = (aArray, start, deleteCount, ...items) =>
+    // [ ...aArray.slice(0, start), ...items, ...aArray.slice(start + deleteCount) ]
+    pureSplice(aArray, start, deleteCount, ...items) {
+      return [ ...aArray.slice(0, start), ...items, ...aArray.slice(start + deleteCount) ]
+    },
+    
+    // sort
+    //無替代語法，只能拷貝出新陣列作sort
+    // const pureSort = (aArray, compareFunction) => [ ...aArray ].sort(compareFunction)
+    pureSort(aArray, compareFunction) {
+      return [ ...aArray ].sort(compareFunction)
+    },
+    
+    // reverse
+    //無替代語法，只能拷貝出新陣列作reverse
+    // const pureReverse = aArray => [ ...aArray ].reverse()
+    pureReverse(aArray) {
+      return [ ...aArray ].reverse()
+    },
+    
+    // delete
+    // 刪除(delete)其中一個成員，再組合所有子字串:
+    // const pureDelete = (aArray, index) => aArray.slice(0,index).concat(aArray.slice(index+1))
+    pureDelete (aArray, index) {
+       return aArray.slice(0,index).concat(aArray.slice(index+1))
+    },
+    
+
+
+
+
+
+
+
 
 }

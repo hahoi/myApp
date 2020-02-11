@@ -63,12 +63,12 @@
               </thead>
               <tbody>
                 <tr v-for="(item,index) in propData.progress">
-                  <td class="text-left px-0">{{ item.pgdate }}</td>
-                  <td class="text-left">{{ item.pgdesc }}</td>
+                  <td class="text-left px-0" v-html="item.pgdate"></td>
+                  <td class="text-left" v-html="item.pgdesc"></td>
                   <td v-if="item.pdf" class="text-center">
                     <span class="blue--text" @click="openPDF(`${item.cfmpic}`)">檢視</span>
                   </td>
-                  <td
+                  <td 
                     v-else
                     v-viewer="{'inline': false, 'button': true, 'navbar': false, 'title': true, 'toolbar': false, 'tooltip': false, 'movable': false, 'zoomable': true, 'rotatable': false, 'scalable': false, 'transition': false, 'fullscreen': true, 'keyboard': true, 'url': 'data-source' }"
                     v-html="`<img src='${item.cfmpic}' style='height:80px;width:80px'>`"
