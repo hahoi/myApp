@@ -24,7 +24,7 @@
         </v-col>
         <!-- <v-col cols="12" class="py-0">
           <v-btn color="orange" @click="searchCallback">搜尋練習</v-btn>
-        </v-col> -->
+        </v-col>-->
         <!-- <v-img src="@/assets/loading.gif" height="40px" v-show="loading" /> -->
       </v-row>
     </v-container>
@@ -87,9 +87,10 @@ export default {
       loading: true,
       workDetailDialog: false,
       searchword: "",
-      treeData: [], //樹狀
-      db_data: [], //db讀取，一維陣列
-      todo: {},
+      treeData: [], //樹狀，螢幕顯示
+      db_data: [], //db讀取，一維陣列，與資料庫同步
+
+      todo: {}, //傳到子元件資料
       ShowRecentReport: 10, //預設顯示10天內填報資料
       searchProgress: false, //預設不搜尋填報資料
 
@@ -167,6 +168,8 @@ export default {
           });
         })
         .then(() => {
+          //與資料庫同步的陣列 this.db_data，更新資料庫時須同時更新 db_data
+          //操作時須防止副作用更改到 db_data
           this.handleData(this.db_data);
         })
         .then(() => {
@@ -176,10 +179,12 @@ export default {
 
     //處理所有節點顯示狀態
     handleData(handleArrayData) {
-      let currentItem = handleArrayData.map(doc => {
+      let currentArrayData = handleArrayData.map(doc => {
         return this.handleNodeData(doc);
       });
-      this.treeData = com_fun.arrayToJson(currentItem);
+      // 此處要特別注意，arrayToTree前一定要深拷貝一份避免副作用(被加入children)
+      let tempArray = com_fun.deepCopy(currentArrayData); //深拷貝一份避免副作用
+      this.treeData = com_fun.arrayToJson(tempArray);
     },
 
     //處理每個節點顯示狀態
@@ -261,11 +266,17 @@ export default {
       let arrFilters = this.searchword.split(/\s+/);
       // console.log(arrFilters);
 
-      let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
-      
-      let field = [] //搜尋欄位
-      let progressField = [] //搜尋填報資料欄位
-      if (this.searchProgress === true) { //要搜尋填報資料
+      // let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
+
+      //處理搜尋前重置所有節點顯示狀態
+      let nodeArray = this.db_data.map(doc => {
+        return this.handleNodeData(doc);
+      });
+
+      let field = []; //搜尋欄位
+      let progressField = []; //搜尋填報資料欄位
+      if (this.searchProgress === true) {
+        //要搜尋填報資料
         //搜尋的欄位，progress是陣列，需特殊處理
         field = [
           "title",
@@ -276,7 +287,8 @@ export default {
           "progress"
         ]; //搜尋這些個欄位
         progressField = ["pgdate", "pgdesc"]; //progress 搜尋這些個欄位
-      } else { //不要搜尋填報資料
+      } else {
+        //不要搜尋填報資料
         field = ["title", "depart", "startDate", "endDate", "status"]; //搜尋這些個欄位
       }
 
@@ -427,6 +439,8 @@ export default {
         });
 
       // console.log(matchArr);
+      // 此處要特別注意，arrayToTree前一定要深拷貝一份避免副作用(被加入children)
+      // matchArr 已經複製過，不再影響db_data
       this.treeData = com_fun.arrayToTree(matchArr);
       // console.log(this.treeData);
     },
@@ -474,10 +488,11 @@ export default {
       console.log("retuen childData", childData);
 
       //=====更改tree Array，更新螢幕畫面=======
-      let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
+      // let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
 
+      let nodeArray = this.db_data;
       nodeArray.forEach(doc => {
-        //從全部的陣列，找到要update的物件，試過用find會失敗
+        //從全部的陣列，找到要update的物件，試過用find會失敗(find會建立新陣列)
         if (doc.id === childData.id) {
           // console.log("childData", childData);
           doc.title = doc.t_title; //還原title，處理螢幕畫面title顏色用
@@ -494,9 +509,9 @@ export default {
         }
       });
 
-      //讓顯示近期填報資料一致
-      this.db_data = nodeArray;
-      this.treeData = com_fun.arrayToJson(nodeArray);
+      //arrayToTree 更新螢幕畫面
+      let tempArray = com_fun.deepCopy(nodeArray); //深拷貝一份避免副作用
+      this.treeData = com_fun.arrayToTree(tempArray);
       // this.$forceUpdate();
       // window.location.reload()
 
@@ -564,7 +579,7 @@ export default {
       // b();
       // c();
       // a(c(b));
-      b(a(c))
+      b(a(c));
     }
   }
 };

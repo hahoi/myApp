@@ -57,7 +57,7 @@
             <v-card-text class="px-3">
               <!-- <v-divider></v-divider> -->
               <!-- 子組件渲染 -->
-              <workItem2DetailReadonly :propData="todo" @listenToChild="getChildData"></workItem2DetailReadonly>
+              <workItem2DetailReadonly :propData="todo"></workItem2DetailReadonly>
             </v-card-text>
           </v-card>
         </v-dialog>
@@ -139,20 +139,11 @@ export default {
           });
         })
         .then(() => {
-          // console.log(this.db_data) // db_data純一維陣列
           this.handleData(this.db_data);
-          // console.log(this.db_data) //這裡已經有副作用了，db_data 已加入children
         })
         .then(() => {
           this.loading = false;
         });
-    },
-    //處理搜尋重置所有節點顯示狀態
-    searchRestData(handleArrayData) {
-      let currentArrayData = handleArrayData.map(doc => {
-        return this.handleNodeData(doc);
-      });
-      return currentArrayData;
     },
 
     //處理所有節點顯示狀態
@@ -160,10 +151,10 @@ export default {
       let currentArrayData = handleArrayData.map(doc => {
         return this.handleNodeData(doc);
       });
-      // console.log(currentArrayData)//純一維陣列
-      let temp = [... currentArrayData]
-      this.treeData = com_fun.arrayToTreeNew(temp);
-      console.log(currentArrayData, this.db_data)//已經被加入children
+      // 此處要特別注意，arrayToTree前一定要深拷貝一份避免副作用(被加入children)
+      let tempArray = com_fun.deepCopy(currentArrayData); //深拷貝一份避免副作用
+      this.treeData = com_fun.arrayToJson(tempArray);
+      // console.log(currentArrayData, this.db_data)//測試是否被加入children
       return currentArrayData;
     },
 
@@ -247,9 +238,11 @@ export default {
       // console.log(arrFilters);
 
       // let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
-      let nodeArray  = this.searchRestData(this.db_data);
-      console.log(nodeArray)
-    
+
+      //處理搜尋前重置所有節點顯示狀態
+      let nodeArray = this.db_data.map(doc => {
+        return this.handleNodeData(doc);
+      });
 
       let field = []; //搜尋欄位
       let progressField = []; //搜尋填報資料欄位
@@ -279,7 +272,7 @@ export default {
       // })
       // console.log(field)
 
-      let matchArr  = nodeArray
+      let matchArr = nodeArray
         .filter(item => {
           let contain_flag = true; // and 都符合
           let arr_flag = [];
@@ -415,10 +408,9 @@ export default {
           cache.expanded = true; //全部展開
           return cache; //回傳複製替換過的一份
         });
-console.table(matchArr)
-      // let temp  = com_fun.arrayToTreeNew(matchArr);
-      // console.table(temp)
-      //  this.treeData = temp
+      // console.table(matchArr);
+      this.treeData = com_fun.arrayToTreeNew(matchArr);
+
     },
 
     //處理樹狀結構，按一下顯示詳細資料
@@ -459,59 +451,7 @@ console.table(matchArr)
       );
     },
 
-    //從子層傳回父層的資料，更新螢幕畫面，並進行存檔
-    getChildData(childData) {
-      console.log("retuen childData", childData);
 
-      //=====更改tree Array，更新螢幕畫面=======
-      let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
-
-      nodeArray.forEach(doc => {
-        //從全部的陣列，找到要update的物件，試過用find會失敗
-        if (doc.id === childData.id) {
-          // console.log("childData", childData);
-          doc.title = doc.t_title; //還原title，處理螢幕畫面title顏色用
-          doc.depart = childData.depart;
-          doc.endDate = childData.endDate;
-          doc.startDate = childData.startDate;
-          doc.status = childData.status;
-          doc.progress = childData.progress;
-          if (childData.memo) {
-            doc.memo = childData.memo;
-          }
-          //處理每個節點顯示狀態
-          doc = this.handleNodeData(doc);
-        }
-      });
-
-      //讓顯示近期填報資料一致
-      this.db_data = nodeArray;
-      this.treeData = com_fun.arrayToJson(nodeArray);
-      // this.$forceUpdate();
-      // window.location.reload()
-
-      //=====更改fireStore資料庫=======
-      let data = {
-        //設定符合firestore資料格式
-        depart: childData.depart,
-        endDate: childData.endDate,
-        startDate: childData.startDate,
-        status: childData.status,
-        //處理progress
-        progress: childData.progress
-      };
-      if (childData.memo) {
-        data.memo = childData.memo;
-      }
-
-      dbFirestore
-        .collection(databaseName2)
-        .doc(childData.id)
-        .update(data)
-        .then(() => {
-          console.log("資料庫已被更新！", data);
-        });
-    },
 
     workDetailClose() {
       //若顯示資料必須重新整理時，目前暫時沒用到
