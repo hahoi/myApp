@@ -7,8 +7,10 @@
             <v-list-item-action>
               <v-icon>{{ item.meta.icon }}</v-icon>
             </v-list-item-action>
-            <v-list-item-content >
-              <v-list-item-title><span class="title">{{item.meta.title}}</span></v-list-item-title>
+            <v-list-item-content>
+              <v-list-item-title>
+                <span class="title">{{item.meta.title}}</span>
+              </v-list-item-title>
             </v-list-item-content>
           </v-list-item>
           <v-divider dark class="my-3" v-if="item.meta.divider"></v-divider>
@@ -34,6 +36,11 @@
               <span>{{username}}</span>
             </v-list-item-title>
           </v-list-item>
+          <v-list-item>
+            <v-list-item-title>
+              <span @click="resetPassword">密碼重設</span>
+            </v-list-item-title>
+          </v-list-item>
           <v-list-item @click="logout()">
             <v-list-item-title>退出</v-list-item-title>
           </v-list-item>
@@ -55,6 +62,7 @@
 <script>
 // import store from "../store";
 import { powerRouter } from "../router";
+import { dbAuth } from "@/fb";
 export default {
   props: {
     source: String
@@ -64,12 +72,12 @@ export default {
     drawer: null
   }),
   mounted() {
-    if(powerRouter[0].children.length == 0){
-            this.$confirm(
-              "功能權限尚未設定，請電洽系統管理員！",
-              { title: "警告", buttonFalseText: "", buttonTrueText: "好" }
-            );
-
+    if (powerRouter[0].children.length == 0) {
+      this.$confirm("功能權限尚未設定，請電洽系統管理員！", {
+        title: "警告",
+        buttonFalseText: "",
+        buttonTrueText: "好"
+      });
     }
   },
   computed: {
@@ -92,6 +100,25 @@ export default {
         .catch(err => {
           throw new Error(error);
         });
+    },
+    resetPassword() {
+      this.$dialog["warning"]({
+        title: "警告",
+        text: "確定要發送重設密碼電子郵件嗎？",
+        persistent: false
+      }).then(res => {
+        if (res) {
+          const emailAddress = this.$store.getters.user.email;
+          dbAuth
+            .sendPasswordResetEmail(emailAddress)
+            .then(function() {
+              // Email sent.
+            })
+            .catch(function(error) {
+              // An error happened.
+            });
+        }
+      });
     }
   }
 };
