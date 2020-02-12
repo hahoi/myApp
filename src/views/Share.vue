@@ -7,20 +7,23 @@
             <img src="@/assets/loading.gif" style="height:125px" />
           </v-overlay>
         </div>
-        <v-col cols="12" sm="12" md="6" class="py-0">
+        <v-col cols="10" class="py-0">
           <v-text-field label="關鍵字搜尋..." v-model="searchword"></v-text-field>
         </v-col>
         <v-col cols="2" class="py-0 px-0 mx-0">
           <v-btn color="info" @click="searchFun">搜尋</v-btn>
         </v-col>
-        <v-col cols="2" class="py-0 pl-0 pr-5">
+        <!-- <v-col cols="2" class="py-0 pl-0 pr-5">
           <v-btn color="blue lighten-4" @click="restsearchFun">重置</v-btn>
+        </v-col> -->
+        <v-col cols="6" class="py-0">
+          <v-btn text color="orange" @click="nearreported">顯示幾天內填報的資料</v-btn>
         </v-col>
-        <v-col cols="4" class="py-0">
-          <v-btn color="orange" @click="nearreported">顯示近期填報</v-btn>
-        </v-col>
-        <v-col cols="2" class="py-0">
+        <v-col cols="2" class="py-0 ">
           <v-switch v-model="searchProgress"></v-switch>
+        </v-col>
+        <v-col cols="4" class="py-0 px-0">
+          搜尋填報資料
         </v-col>
         <!-- <v-col cols="12" class="py-0">
           <v-btn color="orange" @click="searchCallback">搜尋練習</v-btn>
@@ -409,7 +412,7 @@ export default {
           return cache; //回傳複製替換過的一份
         });
       // console.table(matchArr);
-      this.treeData = com_fun.arrayToTreeNew(matchArr);
+      this.treeData = com_fun.arrayToTree(matchArr);
 
     },
 
@@ -454,11 +457,6 @@ export default {
 
 
     workDetailClose() {
-      //若顯示資料必須重新整理時，目前暫時沒用到
-      if (this.$store.state.mustUpdate) {
-        this.handleData(this.db_data);
-        this.$store.commit("setmustUpdate", false);
-      }
       this.workDetailDialog = false;
     },
     // getServerTime() {

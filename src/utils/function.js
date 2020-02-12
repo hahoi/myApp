@@ -93,7 +93,7 @@ export default {
         return r;
     },
 
-    //  一維陣列 => 樹狀  ========//問題 無父層的無法顯示，可能是pid沒有設定正確
+    //  一維陣列 => 樹狀  ========//問題 無父層的無法顯示，可能是pid沒有設定正確，也是存在副作用
     arrayToJson(data) {
         let tree = data.filter((father) => {       //循环所有项
             let branchArr = data.filter((child) => {
@@ -152,7 +152,7 @@ export default {
         return r
     },
 
-    //=======一維陣列 => 樹狀 ====這個purePush還沒嘗試成功 ============
+    //=======一維陣列 => 樹狀 ====purePush 跟arrayToTree沒什麼差別============
     arrayToTreeNew(treeArray) {
         let r = []
         let tmpMap = {};
