@@ -33,12 +33,12 @@
         <v-list class="text-left">
           <v-list-item>
             <v-list-item-title>
-              <span>{{username}}</span>
+              <span class="blue--text">{{username}}</span>
             </v-list-item-title>
           </v-list-item>
           <v-list-item>
             <v-list-item-title>
-              <span @click="resetPassword">密碼重設</span>
+              <span class="body-2" @click="resetPassword">密碼重設</span>
             </v-list-item-title>
           </v-list-item>
           <v-list-item @click="logout()">

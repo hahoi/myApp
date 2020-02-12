@@ -24,31 +24,31 @@ export const powerRouter = [
         path: '/Fillin2',
         // name: 'Fillin',
         component: () => import('@/views/Fillin2'),
-        meta: { title: '進度填報', role: '進度填報', icon: "mdi-home" }
+        meta: { title: '進度填報', role: '進度填報', icon: "mdi-progress-check" }
       },
       {
         path: '/Pcalendar2',
         // name: 'Pcalendar2',
         component: () => import('@/views/Pcalendar2'),
-        meta: { title: '期程檢核', role: '期程檢核', icon: "mdi-home" }
+        meta: { title: '期程檢核', role: '期程檢核', icon: "mdi-calendar-range" }
       },
       {
         path: '/Share',
         // name: 'Share',
         component: () => import('@/views/Share'),
-        meta: { title: '合作分享', role: '合作分享', icon: "mdi-home", divider: true}
+        meta: { title: '合作分享', role: '合作分享', icon: "mdi-share-variant", divider: true}
       },
       {
         path: '/project2',
         // name: 'project',
         component: () => import('@/views/project2'),
-        meta: { title: '專案管理', role: '專案管理', icon: "mdi-home" }
+        meta: { title: '專案管理', role: '專案管理', icon: "mdi-sitemap" }
       },
       {
         path: '/workItem2',
         // name: 'workItem',
         component: () => import('@/views/workItem2'),
-        meta: { title: '工項管理', role: '工項管理', icon: "mdi-home", divider: true }
+        meta: { title: '工項管理', role: '工項管理', icon: "mdi-playlist-edit", divider: true }
       },
       {
         path: '/DBstructureEX',
@@ -66,13 +66,13 @@ export const powerRouter = [
         path: '/Message',
         // name: 'Message',
         component: () => import('@/views/Message'),
-        meta: { title: '訊息管理', role: '訊息管理', icon: "mdi-contact-mail"  }
+        meta: { title: '訊息管理', role: '訊息管理', icon: "mdi-message-alert-outline"  }
       },
       {
         path: '/Department',
         // name: 'department',
         component: () => import('@/views/Department'),
-        meta: { title: '單位管理', role: '單位管理', icon: "mdi-contact-mail"  , divider: true}
+        meta: { title: '單位管理', role: '單位管理', icon: "mdi-account-group"  , divider: true}
       },
 
       {
