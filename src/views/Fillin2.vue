@@ -7,15 +7,20 @@
             <img src="@/assets/loading.gif" style="height:125px" />
           </v-overlay>
         </div>
+        <div class="text-center mb-4">
+          <v-overlay :opacity="0.5" z-index="100" :value="alert">
+            <v-alert color="red" dark transition="scale-transition">{{ alertResult }}</v-alert>
+          </v-overlay>
+        </div>
         <v-col cols="12" class="py-0">
-          <v-btn color="orange" @click="nearreported">顯示近期填報</v-btn>
+          <v-btn text color="orange" @click="nearreported">顯示近期填報</v-btn>
         </v-col>
         <v-col cols="12">
           <v-tree ref="tree1" :data="treeData" :tpl="tpl" />
         </v-col>
       </v-row>
     </v-container>
-          <scroll-up :scroll-duration="1000" ></scroll-up>
+    <scroll-up :scroll-duration="1000"></scroll-up>
     <!-- =========== 顯示詳細資料 ========= -->
     <v-container>
       <v-row>
@@ -60,6 +65,9 @@ export default {
       loading: true,
       workDetailDialog: false,
 
+      alertResult: "",
+      alert: false,
+
       treeData: [], //樹狀
       db_data: [], //db讀取，一維陣列
       todo: {},
@@ -89,7 +97,9 @@ export default {
         .then(res => {
           if (res) {
             this.ShowRecentReport = res;
-            this.handleData(this.db_data);
+            //取的已被限制填報單位的陣列 []
+            let nodeArray = this.$refs.tree1.getNodes();
+            this.handleData(nodeArray);
           }
         });
     },
@@ -117,15 +127,17 @@ export default {
         });
     },
 
-    //處理所有節點顯示狀態，將負責單位加到title，再利用searchNode方法過濾出需填報的工項
+    //處理所有節點顯示狀態
     handleData(handleArrayData) {
-      let currentItem = handleArrayData.map(doc => {
+      let currentArrayData = handleArrayData.map(doc => {
         return this.handleNodeData(doc);
       });
-      this.treeData = com_fun.arrayToJson(currentItem);
+      // 此處要特別注意，arrayToTree前一定要深拷貝一份避免副作用(被加入children)
+      let tempArray = com_fun.deepCopy(currentArrayData); //深拷貝一份避免副作用
+      this.treeData = com_fun.arrayToJson(tempArray);
     },
 
-    //處理每個節點顯示狀態
+    //處理每個節點顯示狀態，將負責單位加到title，再利用searchNode方法過濾出需填報的工項
     handleNodeData(doc) {
       // let currentItem = handleArrayData.map(doc => {
       if (!doc.t_title) {
@@ -204,6 +216,7 @@ export default {
 
               //不是負責的單位，不能填報
               if (this.$store.state.user.department !== node.depart) {
+                this.ShowAlert("不是負責的單位，不能填報！", 1000);
                 return false;
               }
 
@@ -243,8 +256,10 @@ export default {
       console.log("retuen childData", childData);
 
       //=====更改tree Array，更新螢幕畫面=======
-      let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
+      //取的已被限制填報單位的陣列 []
+      let nodeArray = this.$refs.tree1.getNodes();
 
+      // let nodeArray = this.db_data;
       nodeArray.forEach(doc => {
         //從全部的陣列，找到要update的物件，試過用find會失敗
         if (doc.id === childData.id) {
@@ -263,11 +278,11 @@ export default {
         }
       });
 
-      //讓顯示近期填報資料一致
-      this.db_data = nodeArray;
-      this.treeData = com_fun.arrayToJson(nodeArray);
-      // this.$forceUpdate();
-      // window.location.reload()
+      //arrayToTree 更新螢幕畫面
+      let tempArray = com_fun.deepCopy(nodeArray); //深拷貝一份避免副作用
+      this.treeData = com_fun.arrayToTree(tempArray);
+      //限制只顯示填報單位
+      // this.$refs.tree1.searchNodes(`(${this.$store.state.user.department})`);
 
       //=====更改fireStore資料庫=======
       let data = {
@@ -292,11 +307,17 @@ export default {
         });
     },
 
-    //按退回鍵時需重整頁面資料，需等待一段時間才會更新
+    //按退回鍵
     workDetailBackHandle() {
-      // this.readData()
-      // this.handleData(this.db_data);
       this.workDetailDialog = false;
+    },
+    ShowAlert(alertMsg, showtime = 3000) {
+      this.alertResult = alertMsg;
+      this.alert = true;
+      setTimeout(() => {
+        this.alertResult = "";
+        this.alert = false;
+      }, showtime);
     },
 
     getServerTime() {

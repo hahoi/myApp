@@ -128,6 +128,7 @@ export default {
     },
 
     //=======一維陣列 => 樹狀 ====//問題 children 會重複拷貝，顯示的tree會越來越大==============
+    //使用前要先深拷貝Array，再轉換成為Tree
     arrayToTree(treeArray) {
         let r = []
         let tmpMap = {};
@@ -153,7 +154,7 @@ export default {
     },
 
     //=======一維陣列 => 樹狀 ====purePush 跟arrayToTree沒什麼差別============
-    arrayToTreeNew(treeArray) {
+    arrayToTreePure(treeArray) {
         let r = []
         let tmpMap = {};
         const purePush = (aArray, newEntry) => [ ...aArray, newEntry ]
