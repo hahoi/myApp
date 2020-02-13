@@ -97,9 +97,21 @@ export default {
         .then(res => {
           if (res) {
             this.ShowRecentReport = res;
-            //取的已被限制填報單位的陣列 []
+            //取得已被限制填報單位的陣列 []
             let nodeArray = this.$refs.tree1.getNodes();
             this.handleData(nodeArray);
+
+            // //底下可正確執行，但速度太慢
+            // this.handleData(this.db_data);
+            // const sf = () => {
+            //   setTimeout(() => {
+            //     this.$refs.tree1.searchNodes(
+            //       `(${this.$store.state.user.department})`
+            //     );
+            //   }, 10);
+            // };
+            // //可確保searchNodes 在 handleData後面執行
+            // setTimeout(sf, 10); 
           }
         });
     },
