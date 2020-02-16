@@ -123,11 +123,21 @@
                 </div>
               </v-card-text>
               <v-card-actions>
-                <v-btn
-                  text
-                  color="secondary"
-                  @click="selectedOpen = false;Event_edit=false"
-                >Cancel</v-btn>
+                <div v-if="!Event_edit">
+                  <v-btn
+                    text
+                    color="secondary"
+                    @click="selectedOpen = false;Event_edit=false"
+                  >Cancel</v-btn>
+                </div>
+                <div v-else>
+                  <v-btn
+                    text
+                    color="secondary"
+                    @click="selectedOpen = false;Event_edit=false"
+                  >Cancel</v-btn>
+                  <v-btn color="secondary" @click="selectedOpen = false;Event_edit=false">存檔</v-btn>
+                </div>
               </v-card-actions>
             </v-card>
           </v-menu>
@@ -256,19 +266,23 @@ export default {
       this.$refs.calendar.next();
     },
     showEvent({ nativeEvent, event }) {
+      //             取得滑鼠事件
+      // console.log(nativeEvent, nativeEvent.target);
       const open = () => {
         this.selectedEvent = event;
         this.selectedElement = nativeEvent.target;
         setTimeout(() => (this.selectedOpen = true), 10);
       };
 
+      //還要再理解
       if (this.selectedOpen) {
         this.selectedOpen = false;
         setTimeout(open, 10);
       } else {
-        open();
+        open(); //只保留此句程式碼，仍能正確執行
       }
-
+      // Event 介面的 stopPropagation() 方法
+      // 可阻止當前事件繼續進行捕捉（capturing）及冒泡（bubbling）階段的傳遞。
       nativeEvent.stopPropagation();
     },
     updateRange({ start, end }) {
