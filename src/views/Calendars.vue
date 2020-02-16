@@ -1,6 +1,11 @@
 <template>
   <div>
     <v-row class="fill-height">
+      <div class="text-center mb-4">
+        <v-overlay :opacity="0.5" z-index="100" :value="alert">
+          <v-alert color="red" dark transition="scale-transition">{{ alertResult }}</v-alert>
+        </v-overlay>
+      </div>
       <v-col>
         <v-sheet height="64">
           <v-toolbar flat color="white">
@@ -16,7 +21,7 @@
 
             <!-- <v-btn fab color="primary" @click="AddEvent">
               <span class="headline">+</span>新增
-            </v-btn> -->
+            </v-btn>-->
 
             <v-spacer></v-spacer>
 
@@ -43,6 +48,10 @@
               </v-list>
             </v-menu>
           </v-toolbar>
+          <!-- 新增浮動按鈕 -->
+          <v-btn class="my-10" fab color="primary" bottom right absolute @click="AddEvent">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
         </v-sheet>
         <v-sheet height="600">
           <v-calendar
@@ -60,7 +69,7 @@
             @change="updateRange"
           ></v-calendar>
 
-            <!-- @change="updateRange" -->
+          <!-- @change="updateRange" -->
 
           <v-menu
             v-model="selectedOpen"
@@ -75,12 +84,12 @@
                 </v-btn>
                 <v-toolbar-title v-html="selectedEvent.name"></v-toolbar-title>
                 <v-spacer></v-spacer>
-                <v-btn icon>
-                  <v-icon>mdi-heart</v-icon>
+                <v-btn icon class="mr-1" @click="deleteEvent">
+                  <v-icon>mdi-trash-can-outline</v-icon>
                 </v-btn>
-                <v-btn icon>
+                <!-- <v-btn icon>
                   <v-icon>mdi-dots-vertical</v-icon>
-                </v-btn>
+                </v-btn>-->
               </v-toolbar>
               <v-card-text class="pb-0">
                 <div v-if="!Event_edit">
@@ -268,7 +277,7 @@
                         </v-col>
 
                         <v-col cols="12" class="py-0">
-                          <v-text-field label="地 點：" v-model="selectedEvent.localtion"></v-text-field>
+                          <v-text-field label="地 點：" v-model="selectedEvent.location"></v-text-field>
                         </v-col>
 
                         <v-col cols="12" class="py-0">
@@ -285,7 +294,11 @@
                 </div>
                 <div v-else>
                   <v-btn text :color="selectedEvent.color" @click.prevent="close">離開</v-btn>
-                  <v-btn small :color="selectedEvent.color" @click.prevent="EventSave(selectedEvent)">存檔</v-btn>
+                  <v-btn
+                    small
+                    :color="selectedEvent.color"
+                    @click.prevent="EventSave(selectedEvent)"
+                  >存檔</v-btn>
                 </div>
               </v-card-actions>
             </v-card>
@@ -302,6 +315,8 @@ import moment from "moment";
 
 export default {
   data: () => ({
+    alert: false,
+    alertResult: "",
     today: new Date().toISOString().substr(0, 10),
 
     weekdays: [1, 2, 3, 4, 5, 6, 0],
@@ -314,7 +329,7 @@ export default {
     },
 
     start: null, //這裡的start是個物件，由calendar產生，與selectedEvent中的start(字串)不同
-    end: null,
+    end: null, //同上
     selectedEvent: {},
     selectedElement: null,
     selectedOpen: false,
@@ -334,16 +349,8 @@ export default {
     startTimeDialog: false,
     endTimeDialog: false,
 
-    colors: [
-      "blue",
-      "indigo",
-      "deep-purple",
-      "cyan",
-      "green",
-      "orange",
-      "grey darken-1"
-    ],
     empty: {
+      //這裡的start end 格式 同 event
       name: "",
       start: "",
       end: "",
@@ -359,7 +366,8 @@ export default {
   }),
   computed: {
     title() {
-      console.log(this);
+      // console.log(this);
+      //這裡的start, end 格式是物件，由calendar自動產生
       const { start, end } = this;
       if (!start || !end) {
         return "";
@@ -369,7 +377,7 @@ export default {
       // const endMonth = this.monthFormatter(end);
       // const suffixMonth = startMonth === endMonth ? "" : endMonth;
 
-      const startYear = start.year
+      const startYear = start.year;
       // const endYear = end.year;
       // const suffixYear = startYear === endYear ? "" : endYear;
 
@@ -399,11 +407,10 @@ export default {
     this.getEvents();
   },
   methods: {
-    updateRange ({ start, end }) {
-      this.start = start
-      this.end = end
+    updateRange({ start, end }) {
+      this.start = start;
+      this.end = end;
     },
-
 
     getEvents() {
       let events = [];
@@ -442,7 +449,7 @@ export default {
     showEvent({ nativeEvent, event }) {
       //             取得滑鼠事件
       // console.log(nativeEvent, nativeEvent.target);
-      console.log("click event",event);
+      // console.log("click event", event);
       const open = () => {
         this.selectedEvent = event;
         this.selectedElement = nativeEvent.target;
@@ -460,9 +467,36 @@ export default {
       // 可阻止當前事件繼續進行捕捉（capturing）及冒泡（bubbling）階段的傳遞。
       nativeEvent.stopPropagation();
     },
+    deleteEvent() {
+      // console.log(this.selectedEvent);
+      let index = this.selectedEvent.id;
+      this.$confirm("確定要刪除這個事件嗎？", {
+        color: "red",
+        title: "嚴重警告"
+      }).then(res => {
+        if (res) {
+          //螢幕
+          this.events.splice(index, 1);
+          //資料庫
+          dbFirestore
+            .collection("calEvent")
+            .doc(index)
+            .delete()
+            .then(() => {
+              console.log("資料刪除成功！");
+            })
+            .then(() => {
+              //重新讀取資料庫
+              // this.getEvents();
+            });
+          this.$refs.calendar.checkChange();
+          setTimeout(() => this.close(), 10);
+        }
+      });
+    },
 
     editEvent() {
-      console.log(this.selectedEvent)
+      // console.log(this.selectedEvent);
       this.Event_edit = true;
       setTimeout(() => (this.selectedOpen = true), 10);
     },
@@ -476,20 +510,22 @@ export default {
       if (!this.$refs.form.validate()) {
         //有錯
         // console.log(this.$refs.form.validate());
-        alert("請輸入必要欄位資料！");
+        this.ShowAlert("請輸入必要欄位資料！");
         return false;
       } //存檔
       if (event.endDay !== "" && event.startDay > event.endDay) {
-        alert("開始日期 大於 結束日期！");
+        this.ShowAlert("開始日期 大於 結束日期！");
         return false;
       }
 
       let data = event;
       data.start = `${event.startDay} ${event.startTime}`;
       data.end = `${event.endDay} ${event.endTime}`;
-      console.log(this.$store.getters.user)
-      data.contactPerson = `${this.$store.getters.user.name} ${this.$store.getters.user.telephone}`;
+      // console.table("user",this.$store.getters.user);
+      let telephone = this.$store.getters.user.telephone || "";
+      data.contactPerson = `${this.$store.getters.user.name} ${telephone}`;
       // console.log(event, data);
+      //把每個屬性的值有空白的都去掉
       Object.keys(data).forEach(function(key) {
         data[key] = data[key].trim();
       });
@@ -515,14 +551,22 @@ export default {
             console.log("更新！", data);
           });
       }
-
-      setTimeout(() => (this.close()), 10);
+      this.$refs.calendar.checkChange();
+      setTimeout(() => this.close(), 10);
       return true;
     },
     close() {
       this.selectedOpen = false;
       this.Event_edit = false;
       this.Event_add = false;
+    },
+    ShowAlert(alertMsg, showtime = 3000) {
+      this.alertResult = alertMsg;
+      this.alert = true;
+      setTimeout(() => {
+        this.alertResult = "";
+        this.alert = false;
+      }, showtime);
     }
   }
 };

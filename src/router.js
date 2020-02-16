@@ -153,7 +153,8 @@ router.beforeEach((to, from, next) => {
                 alias: doc.data().alias,
                 role: doc.data().role,
                 state: doc.data().state,
-                memo: doc.data().memo
+                memo: doc.data().memo,
+                telephone: doc.data().telephone,
               };
             });
             //存入vuex store
