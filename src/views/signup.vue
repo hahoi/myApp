@@ -53,9 +53,9 @@
                   ></v-select>
                   <v-text-field
                     label="連絡電話"
-                    v-model="user.telphone"
+                    v-model="user.telephone"
                     :rules="[rules.required]"
-                    name="telphone"
+                    name="telephone"
                     required
                   ></v-text-field>
 
@@ -145,7 +145,7 @@ export default {
         name: "謝孟良",
         alias: "000614",
         department: "研考處",
-        telphone: "",
+        telephone: "",
         role: [], //角色權限
         state: "",
         memo: ""

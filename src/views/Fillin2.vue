@@ -101,7 +101,8 @@ export default {
             let nodeArray = this.$refs.tree1.getNodes();
             this.handleData(nodeArray);
 
-            // //底下可正確執行，但速度太慢
+            //填報資料callback練習
+            // //底下可正確執行，但速度太慢 
             // this.handleData(this.db_data);
             // const sf = () => {
             //   setTimeout(() => {

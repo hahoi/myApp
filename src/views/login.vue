@@ -129,6 +129,7 @@ export default {
                     alias: doc.data().alias,
                     role: doc.data().role,
                     state: doc.data().state,
+                    telephone: doc.data().telephone,
                     memo: doc.data().memo
                   };
                 });

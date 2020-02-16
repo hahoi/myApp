@@ -76,7 +76,7 @@
                   </v-col>
 
                   <v-col cols="12">
-                    <v-text-field label="連絡電話" v-model="editedItem.telphone" name="telphone"></v-text-field>
+                    <v-text-field label="連絡電話" v-model="editedItem.telephone" name="telephone"></v-text-field>
                   </v-col>
                   <v-col cols="12" v-if="editedIndex !== -1">
                     <v-select
@@ -157,7 +157,7 @@ export default {
       { text: "Email", value: "email" },
       { text: "姓名", value: "name" },
       { text: "單位部門", value: "department" },
-      { text: "連絡電話", value: "telphone" },
+      { text: "連絡電話", value: "telephone" },
       { text: "使用權限", value: "role" },
       { text: "修改時間", value: "createAt" },
       { text: "操作", value: "action", sortable: false }
@@ -180,7 +180,7 @@ export default {
       email: "",
       name: "",
       department: "",
-      telphone: "",
+      telephone: "",
       role: [],
       state: "",
       memo: "",
@@ -192,7 +192,7 @@ export default {
       email: "",
       name: "",
       department: "",
-      telphone: "",
+      telephone: "",
       role: [],
       state: "",
       memo: "",
@@ -271,7 +271,7 @@ export default {
               email: doc.data().email,
               name: doc.data().name,
               department: doc.data().department,
-              telphone: doc.data().telphone || "",
+              telephone: doc.data().telephone || "",
               memo: doc.data().memo,
               role: doc.data().role,
               state: doc.data().state,

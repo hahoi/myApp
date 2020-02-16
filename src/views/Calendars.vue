@@ -14,6 +14,12 @@
             <v-toolbar-title>{{ title }}</v-toolbar-title>
             <v-spacer></v-spacer>
 
+            <!-- <v-btn fab color="primary" @click="AddEvent">
+              <span class="headline">+</span>新增
+            </v-btn> -->
+
+            <v-spacer></v-spacer>
+
             <v-menu bottom right>
               <template v-slot:activator="{ on }">
                 <v-btn outlined color="grey darken-2" v-on="on">
@@ -51,9 +57,10 @@
             @click:date="viewDay"
             locale="zh-TW"
             :weekdays="weekdays"
+            @change="updateRange"
           ></v-calendar>
 
-          <!-- @change="updateRange" -->
+            <!-- @change="updateRange" -->
 
           <v-menu
             v-model="selectedOpen"
@@ -75,7 +82,7 @@
                   <v-icon>mdi-dots-vertical</v-icon>
                 </v-btn>
               </v-toolbar>
-              <v-card-text>
+              <v-card-text class="pb-0">
                 <div v-if="!Event_edit">
                   <p>
                     開始時間：
@@ -90,32 +97,182 @@
                     <span v-html="selectedEvent.location"></span>
                   </p>
                   <p>
-                    詳細資料：
+                    備 註：
                     <span v-html="selectedEvent.details"></span>
                   </p>
                   <p>
-                    聯 絡 人：
-                    <span v-html="selectedEvent.location"></span>
+                    聯絡人：
+                    <span v-html="selectedEvent.contactPerson"></span>
                   </p>
                 </div>
                 <div v-else>
-                  <v-form>
+                  <v-form ref="form">
                     <v-container>
                       <v-row>
-                        <v-col cols="12">
-                          <v-text-field label="開始時間："></v-text-field>
+                        <v-col cols="12" class="py-0">
+                          <v-text-field
+                            label="事由："
+                            v-model="selectedEvent.name"
+                            :rules="[rules.required]"
+                          ></v-text-field>
+                        </v-col>
+                        <!-- 選擇開始日期 -->
+                        <v-col cols="6" class="py-0">
+                          <v-dialog
+                            ref="startDateRef"
+                            v-model="startDateDialog"
+                            :return-value.sync="selectedEvent.startDay"
+                            persistent
+                            width="290px"
+                          >
+                            <template v-slot:activator="{ on }">
+                              <v-text-field
+                                v-model="selectedEvent.startDay"
+                                label="開始日期"
+                                prepend-icon="event"
+                                :rules="[rules.required]"
+                                readonly
+                                v-on="on"
+                              ></v-text-field>
+                            </template>
+                            <v-date-picker
+                              v-model="selectedEvent.startDay"
+                              first-day-of-week="1"
+                              locale="zh-TW"
+                              scrollable
+                            >
+                              <v-spacer></v-spacer>
+                              <v-btn text color="primary" @click="startDateDialog = false">Cancel</v-btn>
+                              <v-btn
+                                text
+                                color="primary"
+                                @click="$refs.startDateRef.save(selectedEvent.startDay)"
+                              >OK</v-btn>
+                            </v-date-picker>
+                          </v-dialog>
                         </v-col>
 
-                        <v-col cols="12">
-                          <v-text-field label="結束時間："></v-text-field>
+                        <!-- 選擇開始時間： -->
+                        <v-col cols="6" class="py-0">
+                          <v-dialog
+                            ref="startTimeRef"
+                            v-model="startTimeDialog"
+                            :return-value.sync="selectedEvent.startTime"
+                            persistent
+                            width="290px"
+                          >
+                            <template v-slot:activator="{ on }">
+                              <v-text-field
+                                v-model="selectedEvent.startTime"
+                                label="開始時間"
+                                prepend-icon="access_time"
+                                readonly
+                                v-on="on"
+                              ></v-text-field>
+                            </template>
+                            <v-time-picker
+                              v-if="startTimeDialog"
+                              v-model="selectedEvent.startTime"
+                              full-width
+                              :max="selectedEvent.endTime"
+                            >
+                              <v-spacer></v-spacer>
+                              <v-btn text color="primary" @click="startTimeDialog = false">Cancel</v-btn>
+                              <v-btn
+                                text
+                                color="primary"
+                                @click="$refs.startTimeRef.save(selectedEvent.startTime)"
+                              >OK</v-btn>
+                            </v-time-picker>
+                          </v-dialog>
                         </v-col>
 
-                        <v-col cols="12">
-                          <v-text-field label="地 點："></v-text-field>
+                        <!-- 選擇結束日期 -->
+                        <v-col cols="6" class="py-0">
+                          <v-dialog
+                            ref="endDateRef"
+                            v-model="endDateDialog"
+                            :return-value.sync="selectedEvent.endDay"
+                            persistent
+                            width="290px"
+                          >
+                            <template v-slot:activator="{ on }">
+                              <v-text-field
+                                v-model="selectedEvent.endDay"
+                                label="結束日期"
+                                prepend-icon="event"
+                                readonly
+                                v-on="on"
+                              ></v-text-field>
+                            </template>
+                            <v-date-picker
+                              v-model="selectedEvent.endDay"
+                              first-day-of-week="1"
+                              locale="zh-TW"
+                              scrollable
+                            >
+                              <v-spacer></v-spacer>
+                              <v-btn text color="primary" @click="endDateDialog = false">Cancel</v-btn>
+                              <v-btn
+                                text
+                                color="primary"
+                                @click="$refs.endDateRef.save(selectedEvent.endDay)"
+                              >OK</v-btn>
+                            </v-date-picker>
+                          </v-dialog>
                         </v-col>
 
-                        <v-col cols="12">
-                          <v-text-field label="詳細資料："></v-text-field>
+                        <!-- 選擇結束時間： -->
+                        <v-col cols="6" class="py-0">
+                          <v-dialog
+                            ref="endTimeRef"
+                            v-model="endTimeDialog"
+                            :return-value.sync="selectedEvent.endTime"
+                            persistent
+                            width="290px"
+                          >
+                            <template v-slot:activator="{ on }">
+                              <v-text-field
+                                v-model="selectedEvent.endTime"
+                                label="結束時間"
+                                prepend-icon="access_time"
+                                readonly
+                                v-on="on"
+                              ></v-text-field>
+                            </template>
+                            <v-time-picker
+                              v-if="endTimeDialog"
+                              v-model="selectedEvent.endTime"
+                              full-width
+                              :min="selectedEvent.startTime"
+                            >
+                              <v-spacer></v-spacer>
+                              <v-btn text color="primary" @click="endTimeDialog = false">Cancel</v-btn>
+                              <v-btn
+                                text
+                                color="primary"
+                                @click="$refs.endTimeRef.save(selectedEvent.endTime)"
+                              >OK</v-btn>
+                            </v-time-picker>
+                          </v-dialog>
+                        </v-col>
+                        <v-col cols="12" class="py-0">
+                          <v-radio-group v-model="selectedEvent.color" row>
+                            <v-radio class="blue lighten-5" color="blue" value="blue"></v-radio>
+                            <v-radio class="indigo lighten-5" color="indigo" value="indigo"></v-radio>
+                            <v-radio class="purple lighten-5" color="purple" value="purple"></v-radio>
+                            <v-radio class="cyan lighten-5" color="cyan" value="cyan"></v-radio>
+                            <v-radio class="green lighten-5" color="green" value="green"></v-radio>
+                            <v-radio class="orange lighten-5" color="orange" value="orange"></v-radio>
+                          </v-radio-group>
+                        </v-col>
+
+                        <v-col cols="12" class="py-0">
+                          <v-text-field label="地 點：" v-model="selectedEvent.localtion"></v-text-field>
+                        </v-col>
+
+                        <v-col cols="12" class="py-0">
+                          <v-text-field label="備 註：" v-model="selectedEvent.details"></v-text-field>
                         </v-col>
                       </v-row>
                     </v-container>
@@ -124,19 +281,11 @@
               </v-card-text>
               <v-card-actions>
                 <div v-if="!Event_edit">
-                  <v-btn
-                    text
-                    color="secondary"
-                    @click="selectedOpen = false;Event_edit=false"
-                  >Cancel</v-btn>
+                  <v-btn text :color="selectedEvent.color" @click.prevent="close">離開</v-btn>
                 </div>
                 <div v-else>
-                  <v-btn
-                    text
-                    color="secondary"
-                    @click="selectedOpen = false;Event_edit=false"
-                  >Cancel</v-btn>
-                  <v-btn color="secondary" @click="selectedOpen = false;Event_edit=false">存檔</v-btn>
+                  <v-btn text :color="selectedEvent.color" @click.prevent="close">離開</v-btn>
+                  <v-btn small :color="selectedEvent.color" @click.prevent="EventSave(selectedEvent)">存檔</v-btn>
                 </div>
               </v-card-actions>
             </v-card>
@@ -148,8 +297,13 @@
 </template>
 
 <script>
+import { dbFirestore } from "@/fb";
+import moment from "moment";
+
 export default {
   data: () => ({
+    today: new Date().toISOString().substr(0, 10),
+
     weekdays: [1, 2, 3, 4, 5, 6, 0],
     focus: "",
     type: "month",
@@ -159,35 +313,26 @@ export default {
       day: "日"
     },
 
-    start: null,
+    start: null, //這裡的start是個物件，由calendar產生，與selectedEvent中的start(字串)不同
     end: null,
     selectedEvent: {},
     selectedElement: null,
     selectedOpen: false,
-    events: [
-      {
-        name: "Weekly Meeting",
-        start: "2020-02-07 09:00",
-        end: "2020-02-07 10:00",
-        color: "grey darken-1"
-      },
-      {
-        name: "Thomas' Birthday",
-        start: "2020-02-10",
-        color: "deep-purple",
-        details: "詳細資料",
-        location: "",
-        contactPerson: "謝孟良 分機：2222"
-      },
-      {
-        name: "Mash Potatoes",
-        start: "2020-02-09 12:30",
-        end: "2020-02-09 15:30",
-        color: "blue"
-      }
-    ],
+    events: [],
+    rules: {
+      length: len => v => (v || "").length <= len || `最多${len}個字元`,
+      required: v => !!v || "這個欄位必須要輸入"
+    },
+    formValid: false,
 
+    //Date Picker
     Event_edit: false,
+    Event_add: false,
+    startDateDialog: false,
+    endDateDialog: false,
+    //time picker
+    startTimeDialog: false,
+    endTimeDialog: false,
 
     colors: [
       "blue",
@@ -198,16 +343,19 @@ export default {
       "orange",
       "grey darken-1"
     ],
-    names: [
-      "Meeting",
-      "Holiday",
-      "PTO",
-      "Travel",
-      "Event",
-      "Birthday",
-      "Conference",
-      "Party"
-    ]
+    empty: {
+      name: "",
+      start: "",
+      end: "",
+      color: "blue",
+      startDay: new Date().toISOString().substr(0, 10),
+      endDay: "",
+      startTime: "",
+      endTime: "",
+      details: "",
+      location: "",
+      contactPerson: ""
+    }
   }),
   computed: {
     title() {
@@ -218,15 +366,15 @@ export default {
       }
 
       const startMonth = this.monthFormatter(start);
-      const endMonth = this.monthFormatter(end);
-      const suffixMonth = startMonth === endMonth ? "" : endMonth;
+      // const endMonth = this.monthFormatter(end);
+      // const suffixMonth = startMonth === endMonth ? "" : endMonth;
 
-      const startYear = start.year;
-      const endYear = end.year;
-      const suffixYear = startYear === endYear ? "" : endYear;
+      const startYear = start.year
+      // const endYear = end.year;
+      // const suffixYear = startYear === endYear ? "" : endYear;
 
-      const startDay = start.day + this.nth(start.day);
-      const endDay = end.day + this.nth(end.day);
+      // const startDay = start.day + this.nth(start.day);
+      // const endDay = end.day + this.nth(end.day);
 
       switch (this.type) {
         case "month":
@@ -247,8 +395,33 @@ export default {
   },
   mounted() {
     this.$refs.calendar.checkChange();
+
+    this.getEvents();
   },
   methods: {
+    updateRange ({ start, end }) {
+      this.start = start
+      this.end = end
+    },
+
+
+    getEvents() {
+      let events = [];
+      dbFirestore
+        .collection("calEvent")
+        .get()
+        .then(snapshot => {
+          snapshot.forEach(doc => {
+            let appData = doc.data();
+            appData.id = doc.id;
+            events.push(appData);
+          });
+        })
+        .then(() => {
+          this.events = events;
+        });
+    },
+
     viewDay({ date }) {
       this.focus = date;
       this.type = "day";
@@ -265,9 +438,11 @@ export default {
     next() {
       this.$refs.calendar.next();
     },
+
     showEvent({ nativeEvent, event }) {
       //             取得滑鼠事件
       // console.log(nativeEvent, nativeEvent.target);
+      console.log("click event",event);
       const open = () => {
         this.selectedEvent = event;
         this.selectedElement = nativeEvent.target;
@@ -285,93 +460,69 @@ export default {
       // 可阻止當前事件繼續進行捕捉（capturing）及冒泡（bubbling）階段的傳遞。
       nativeEvent.stopPropagation();
     },
-    updateRange({ start, end }) {
-      const events = [];
 
-      const min = new Date(`${start.date}T00:00:00`);
-      const max = new Date(`${end.date}T23:59:59`);
-      const days = (max.getTime() - min.getTime()) / 86400000;
-      const eventCount = this.rnd(days, days + 20);
-
-      for (let i = 0; i < eventCount; i++) {
-        const allDay = this.rnd(0, 3) === 0;
-        const firstTimestamp = this.rnd(min.getTime(), max.getTime());
-        const first = new Date(firstTimestamp - (firstTimestamp % 900000));
-        const secondTimestamp = this.rnd(2, allDay ? 288 : 8) * 900000;
-        const second = new Date(first.getTime() + secondTimestamp);
-
-        events.push({
-          name: this.names[this.rnd(0, this.names.length - 1)],
-          start: this.formatDate(first, !allDay),
-          end: this.formatDate(second, !allDay),
-          color: this.colors[this.rnd(0, this.colors.length - 1)]
-        });
+    editEvent() {
+      console.log(this.selectedEvent)
+      this.Event_edit = true;
+      setTimeout(() => (this.selectedOpen = true), 10);
+    },
+    AddEvent() {
+      this.selectedEvent = { ...this.empty };
+      this.Event_edit = true;
+      this.Event_add = true;
+      setTimeout(() => (this.selectedOpen = true), 10);
+    },
+    EventSave(event) {
+      if (!this.$refs.form.validate()) {
+        //有錯
+        // console.log(this.$refs.form.validate());
+        alert("請輸入必要欄位資料！");
+        return false;
+      } //存檔
+      if (event.endDay !== "" && event.startDay > event.endDay) {
+        alert("開始日期 大於 結束日期！");
+        return false;
       }
 
-      this.start = start;
-      this.end = end;
-      this.events = events;
-      console.log("events", this.events);
-      this.events = [
-        {
-          name: "Weekly Meeting",
-          start: "2020-02-07 09:00",
-          end: "2020-02-07 10:00",
-          color: "grey darken-1"
-        },
-        {
-          name: "Thomas' Birthday",
-          start: "2020-02-10",
-          color: "deep-purple"
-        },
-        {
-          name: "Mash Potatoes",
-          start: "2020-02-09 12:30",
-          end: "2020-02-09 15:30",
-          color: "blue"
-        }
-      ];
-    },
-    nth(d) {
-      return d > 3 && d < 21
-        ? "th"
-        : ["th", "st", "nd", "rd", "th", "th", "th", "th", "th", "th"][d % 10];
-    },
-    rnd(a, b) {
-      return Math.floor((b - a + 1) * Math.random()) + a;
-    },
-    formatDate(a, withTime) {
-      return withTime
-        ? `${a.getFullYear()}-${a.getMonth() +
-            1}-${a.getDate()} ${a.getHours()}:${a.getMinutes()}`
-        : `${a.getFullYear()}-${a.getMonth() + 1}-${a.getDate()}`;
-    },
-    editEvent() {
-      this.Event_edit = true;
+      let data = event;
+      data.start = `${event.startDay} ${event.startTime}`;
+      data.end = `${event.endDay} ${event.endTime}`;
+      console.log(this.$store.getters.user)
+      data.contactPerson = `${this.$store.getters.user.name} ${this.$store.getters.user.telephone}`;
+      // console.log(event, data);
+      Object.keys(data).forEach(function(key) {
+        data[key] = data[key].trim();
+      });
 
-      const open = () => {
-        this.selectedEvent = event;
-        this.selectedElement = nativeEvent.target;
-        setTimeout(() => (this.selectedOpen = true), 10);
-      };
+      if (this.Event_add) {
+        // console.log(data);
+        //新增，更新螢幕
+        this.events.unshift(data);
+        dbFirestore
+          .collection("calEvent")
+          .doc()
+          .set(data)
+          .then(() => {
+            console.log("新增！", data);
+          });
+      } else {
+        console.log(data);
+        dbFirestore
+          .collection("calEvent")
+          .doc(data.id)
+          .set(data)
+          .then(() => {
+            console.log("更新！", data);
+          });
+      }
 
-      setTimeout(() => open, 10);
-
-      // const open = () => {
-
-      // // this.events.push({
-      // //   name: "Thomas' Birthday",
-      // //   start: "2020-02-29",
-      // //   color: "red",
-      // //   details:
-      // //     "詳細資料詳細資料詳細資料詳細資料詳細資料詳細資料詳細資料詳細資料詳細資料詳細資料詳細資料詳細資料詳細資料詳細資料詳細資料",
-      // //   location: "dfasdfasdfas",
-      // //   contactPerson: "謝孟良 分機：2222"
-      // // });
-      //   setTimeout(() => (this.Event_edit = true), 10);
-      //   setTimeout(() => (this.Event_edit = true), 10);
-      //   setTimeout(() => (open), 10);
-      // };
+      setTimeout(() => (this.close()), 10);
+      return true;
+    },
+    close() {
+      this.selectedOpen = false;
+      this.Event_edit = false;
+      this.Event_add = false;
     }
   }
 };
@@ -380,4 +531,7 @@ export default {
 
 
 <style>
+div.v-input__control {
+  height: 30px;
+}
 </style>

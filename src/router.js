@@ -27,10 +27,22 @@ export const powerRouter = [
         meta: { title: '進度填報', role: '進度填報', icon: "mdi-progress-check" }
       },
       {
+        path: '/Calendars',
+        // name: 'Fillin',
+        component: () => import('@/views/Calendars'),
+        meta: { title: '行事曆', role: '行事曆', icon: "mdi-calendar-range" }
+      },
+      // {
+      //   path: '/Calendars1',
+      //   // name: 'Fillin',
+      //   component: () => import('@/views/Calendars1'),
+      //   meta: { title: '行事曆1', role: '行事曆1', icon: "mdi-calendar-range" }
+      // },
+      {
         path: '/Pcalendar2',
         // name: 'Pcalendar2',
         component: () => import('@/views/Pcalendar2'),
-        meta: { title: '期程檢核', role: '期程檢核', icon: "mdi-calendar-range" }
+        meta: { title: '期程檢核', role: '期程檢核', icon: "mdi-calendar-multiple-check" }
       },
       {
         path: '/Share',
