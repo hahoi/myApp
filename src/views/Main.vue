@@ -20,7 +20,7 @@
 
     <v-app-bar app color="indigo" dark>
       <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-toolbar-title>Application</v-toolbar-title>
+      <v-toolbar-title>{{$store.state.ApplicationText}}</v-toolbar-title>
       <v-divider class="mx-4" inset vertical></v-divider>
       <v-spacer></v-spacer>
       <v-menu bottom>
@@ -54,7 +54,7 @@
       </v-content>
     </main>
     <v-footer color="indigo" app>
-      <span class="white--text">&copy; 2020</span>
+      <span class="white--text">{{$store.state.footerText}}</span>
     </v-footer>
   </v-app>
 </template>
@@ -62,7 +62,7 @@
 <script>
 // import store from "../store";
 import { powerRouter } from "../router";
-import { dbAuth } from "@/fb";
+import { dbFirestore, dbAuth } from "@/fb";
 export default {
   props: {
     source: String
@@ -71,9 +71,25 @@ export default {
   data: () => ({
     drawer: null
   }),
+  created() {
+    dbFirestore
+      .collection("SettingData")
+      .doc("system") 
+      .get()
+      .then(doc => {
+        let temp = doc.data();
+        this.$store.commit("setApplicationTexte", temp.ApplicationText);
+        this.$store.commit("setfooterText", temp.footerText);
+        this.$store.commit("setadmTelephone", temp.admTelephone);
+        this.$store.commit("setprojectEndDate", temp.projectEndDate);
+        this.$store.commit("setLevelOneID", temp.LevelOneID);
+      });
+  },
   mounted() {
     if (powerRouter[0].children.length == 0) {
-      this.$confirm("功能權限尚未設定，請電洽系統管理員！", {
+      let tel = this.$store.state.admTelephone
+      console.log(tel)
+      this.$confirm(`功能權限尚未設定，請電洽系統管理員！(${tel})`, {
         title: "警告",
         buttonFalseText: "",
         buttonTrueText: "好"

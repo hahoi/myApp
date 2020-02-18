@@ -118,14 +118,14 @@
           </v-list-item>
           <v-list-item>
             <v-list-item-title @click="sendPasswordResetEmailFun(item)">
-              <v-icon small class="mr-2">mdi-pencil-outline</v-icon>發送重設密碼電子郵件
+              <v-icon small class="mr-2">mdi-lock-reset</v-icon>發送重設密碼電子郵件
             </v-list-item-title>
           </v-list-item>
-          <v-list-item>
+          <!-- <v-list-item>
             <v-list-item-title @click="ForcePasswordChangeAndAuthentication(item)">
               <v-icon small class="mr-2">mdi-pencil-outline</v-icon>強制變更密碼及驗證
             </v-list-item-title>
-          </v-list-item>
+          </v-list-item> -->
           <v-list-item>
             <v-list-item-title @click="deleteItem(item)">
               <v-icon small class="mr-2">mdi-delete</v-icon>刪除使用者

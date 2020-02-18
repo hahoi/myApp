@@ -63,18 +63,6 @@ export const powerRouter = [
         meta: { title: '工項管理', role: '工項管理', icon: "mdi-playlist-edit", divider: true }
       },
       {
-        path: '/DBstructureEX',
-        // name: 'DBstructureEX',
-        component: () => import('@/views/DBstructureEX'),
-        meta: { title: '資料庫結構練習', role: '資料庫結構練習', icon: "mdi-home" }
-      },
-      {
-        path: '/MultiDatabase',
-        // name: 'MultiDatabase',
-        component: () => import('@/views/MultiDatabase'),
-        meta: { title: '兩個資料庫', role: '兩個資料庫', icon: "mdi-contact-mail"  , divider: true}
-      },
-      {
         path: '/Message',
         // name: 'Message',
         component: () => import('@/views/Message'),
@@ -92,6 +80,25 @@ export const powerRouter = [
         // name: 'Users',
         component: () => import('@/views/Users'),
         meta: { title: '使用者管理', role: '使用者管理', icon: "mdi-account" }
+      },
+
+      {
+        path: '/SysParaSet',
+        // name: 'SysParaSet',
+        component: () => import('@/views/SysParaSet'),
+        meta: { title: '系統參數設定', role: '系統參數設定', icon: "mdi-file-settings-outline", divider: true }
+      },
+      {
+        path: '/DBstructureEX',
+        // name: 'DBstructureEX',
+        component: () => import('@/views/DBstructureEX'),
+        meta: { title: '資料庫結構練習', role: '資料庫結構練習', icon: "mdi-home" }
+      },
+      {
+        path: '/MultiDatabase',
+        // name: 'MultiDatabase',
+        component: () => import('@/views/MultiDatabase'),
+        meta: { title: '兩個資料庫', role: '兩個資料庫', icon: "mdi-contact-mail"  , divider: true}
       },
 
     ]

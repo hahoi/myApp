@@ -18,6 +18,16 @@
     <p></p>
     <v-btn @click="mainTransfer1">主資料庫轉換</v-btn>
     <v-btn @click="readDatabase3">讀取全部資料</v-btn>
+
+    <p></p>
+    <p></p>
+    <hr />
+    <p></p>
+    <p></p>
+    <h3>還原燈會填報資料</h3>
+    <p></p>
+    <v-btn @click="mainTransfer1">主資料庫轉換</v-btn>
+    
   </div>
 </template>
 
@@ -224,6 +234,7 @@ export default {
             }
             // console.log(doc);
             dbFirestore
+            //TLFMCDV3
               .collection("TLFMCDV3")
               .doc(item.id)
               .set(doc) //第一次用set

@@ -15,7 +15,7 @@
                 <v-spacer />
                 <v-tooltip bottom>
                   <template v-slot:activator="{ on }">
-                    <v-btn link to="/" icon large v-on="on">Login</v-btn>
+                    <v-btn link to="/" icon large v-on="on">登入畫面</v-btn>
                   </template>
                   <span>離開註冊</span>
                 </v-tooltip>
@@ -86,7 +86,7 @@
                 </v-form>
               </v-card-text>
               <v-card-actions>
-                <v-btn color="success" @click="sendEmailVerification">重新發送驗證郵件</v-btn>
+                <!-- <v-btn color="success" @click="sendEmailVerificationFun">重新發送驗證郵件</v-btn> -->
                 <v-spacer />
                 <v-btn color="primary" @click="signup_handle">註冊</v-btn>
               </v-card-actions>
@@ -94,8 +94,8 @@
           </v-col>
         </v-row>
 
-        <v-btn small @click="FirebaseAdminTest">admin測試</v-btn>
-        <v-btn small @click="logout">logout</v-btn>
+        <!-- <v-btn small @click="FirebaseAdminTest">admin測試</v-btn>
+        <v-btn small @click="logout">logout</v-btn> -->
 
         <!-- 提示對話視窗 -->
         <!-- <div class="text-center">
@@ -122,7 +122,7 @@
 // import "firebase/auth";
 
 import slugify from "slugify";
-import { dbFirestore, dbAuth, dbFunctions, databaseName } from "@/fb";
+import { dbFirestore, dbAuth, dbFunctions } from "@/fb";
 
 export default {
   name: "signup",
@@ -136,15 +136,15 @@ export default {
       show2: false,
       department: [], //單位
       slug: "",
-      password: "00000000",
-      repassword: "00000000",
+      password: "",
+      repassword: "",
       user: {
         //使用者資料
         authId: "",
-        email: "a000614@oa.pthg.gov.tw",
-        name: "謝孟良",
-        alias: "000614",
-        department: "研考處",
+        email: "",
+        name: "",
+        alias: "",
+        department: "",
         telephone: "",
         role: [], //角色權限
         state: "",
@@ -195,7 +195,7 @@ export default {
 
       if (!this.$refs.form.validate()) { //有錯
         // console.log(this.$refs.form.validate())
-        vm.ShowAlert("輸入資料仍有錯誤！");
+        vm.ShowAlert("輸入資料有錯誤！");
         return false;
       } else {
         this.slug = slugify(this.user.alias, {
@@ -272,7 +272,7 @@ export default {
       }
     },
 
-    sendEmailVerification() {
+    sendEmailVerificationFun() {
       let vm = this;
       console.log(dbAuth.currentUser);
       if (dbAuth.currentUser) {

@@ -48,10 +48,6 @@
               </v-list>
             </v-menu>
           </v-toolbar>
-          <!-- 新增浮動按鈕 -->
-          <v-btn class="my-10" fab color="primary" bottom right absolute @click="AddEvent">
-            <v-icon>mdi-plus</v-icon>
-          </v-btn>
         </v-sheet>
         <v-sheet height="600">
           <v-calendar
@@ -304,6 +300,12 @@
             </v-card>
           </v-menu>
         </v-sheet>
+
+          <!-- 新增浮動按鈕 -->
+          <v-btn  fab color="primary" bottom right absolute @click="AddEvent">
+            <v-icon>mdi-plus</v-icon>
+          </v-btn>
+        
       </v-col>
     </v-row>
   </div>

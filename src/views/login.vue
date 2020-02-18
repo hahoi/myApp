@@ -16,7 +16,7 @@
                 </v-tooltip>
               </v-toolbar>
               <v-card-text>
-                <v-form>
+                <v-form ref="form">
                   <!-- <v-text-field label="Login" name="login" prepend-icon="person" type="text" /> -->
                   <v-text-field label="輸入帳號" name="login" v-model="email" :rules="[rules.required]"></v-text-field>
                   <v-text-field
@@ -37,6 +37,9 @@
               </v-card-actions>
             </v-card>
           </v-col>
+          <v-col cols="6" v-show="this.$store.state.loading">
+            <v-progress-linear color="deep-purple accent-4" indeterminate rounded height="6"></v-progress-linear>
+          </v-col>
         </v-row>
       </v-container>
     </v-content>
@@ -46,15 +49,16 @@
 
 <script>
 import slugify from "slugify";
-import { dbFirestore, dbAuth, dbFunctions, databaseName } from "@/fb";
+import { dbFirestore, dbAuth } from "@/fb";
 
 export default {
   name: "login",
   data() {
     return {
+    formValid: false,
       show1: false,
-      email: "a000614@oa.pthg.gov.tw",
-      password: "00000000",
+      email: "",
+      password: "",
       rules: {
         required: value => !!value || "Required.",
         min: v => v.length >= 8 || "最少需要8個字元",
@@ -67,13 +71,22 @@ export default {
     };
   },
   components: {},
-  created() {},
+  created() {
+    this.$store.state.loading = false;
+  },
   mounted() {},
   watch: {},
   computed: {},
   methods: {
     login_handle() {
+      if (!this.$refs.form.validate()) {
+        //有錯
+        console.log(this.$refs.form.validate());
+        return false;
+      } 
+
       let vm = this;
+      this.$store.state.loading = true;
       const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       if (pattern.test(vm.email)) {
         //用email登入
@@ -103,6 +116,7 @@ export default {
               buttonFalseText: "",
               buttonTrueText: "重試"
             });
+            this.$store.state.loading = false
           });
       }
     }, //login_handle
@@ -144,6 +158,9 @@ export default {
                       // console.log(`這裡會發生一些問題：${err}網路上查還無法解決並無大礙，捕捉錯誤後不用顯示`)
                     });
                   })
+                  .then(() => {
+                    setTimeout(() => (this.$store.state.loading = false), 10);
+                  })
                   .catch(() => {
                     console.log("loginSet error");
                   });
@@ -153,6 +170,7 @@ export default {
               "你註冊的Email帳號尚未驗證！<br>請到註冊的郵件信箱收信，點擊連結回傳確認。",
               { title: "警告", buttonFalseText: "", buttonTrueText: "好" }
             );
+            this.$store.state.loading = false
           }
         })
         .catch(error => {
@@ -178,6 +196,7 @@ export default {
             buttonFalseText: "",
             buttonTrueText: "重試"
           });
+          this.$store.state.loading = false
         });
     }
   } //methods

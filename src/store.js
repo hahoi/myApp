@@ -5,11 +5,15 @@ Vue.use(Vuex)
 
 const state = {
   device: "",
+  loading: true,  // this.$store.state.loading
   userId: sessionStorage.getItem('uid')=== "undefined" ? "" : sessionStorage.getItem('uid') ,
   user:null,
-  projectEndDate: "2025-07-31", //專案結束日期
-  loading: true,  // this.$store.state.loading
-  LevelOneID:"1234567890abc",  // this.$store.state.LevelOneID 
+
+  ApplicationText : "",
+  footerText : "",
+  admTelephone : "",
+  projectEndDate: "", //專案結束日期
+  LevelOneID: "",  // this.$store.state.LevelOneID 
   //權限控管
   // role: null,
   newRouter: [],
@@ -18,10 +22,10 @@ const state = {
 }
 const getters = {
   device: state => state.device,
+  loading: state => state.loading,
   userId: state => state.userId,
   user: state => state.user,
   projectEndDate: state => state.projectEndDate, 
-  loading: state => state.loading,
   // role: state => state.user.role,
   newRouter: state => state.newRouter,
   workItemData: state => state.workItemData,
@@ -51,6 +55,23 @@ const mutations = {
   },
   setmustUpdate(state, data) {
     state.mustUpdate = data
+  },
+
+ 
+  setApplicationTexte(state, data) {
+    state.ApplicationText = data
+  },
+  setfooterText(state, data) {
+    state.footerText = data
+  },
+  setadmTelephone(state, data) {
+    state.admTelephone = data
+  },
+  setprojectEndDate(state, data) {
+    state.projectEndDate = data
+  },
+  setLevelOneID(state, data) {
+    state.LevelOneID = data
   },
 
 
