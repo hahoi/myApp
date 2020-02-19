@@ -19,10 +19,6 @@
             <v-toolbar-title>{{ title }}</v-toolbar-title>
             <v-spacer></v-spacer>
 
-            <!-- <v-btn fab color="primary" @click="AddEvent">
-              <span class="headline">+</span>新增
-            </v-btn>-->
-
             <v-spacer></v-spacer>
 
             <v-menu bottom right>
@@ -42,9 +38,6 @@
                 <v-list-item @click="type = 'month'">
                   <v-list-item-title>月</v-list-item-title>
                 </v-list-item>
-                <!-- <v-list-item @click="type = '4day'">
-                <v-list-item-title>4天</v-list-item-title>
-                </v-list-item>-->
               </v-list>
             </v-menu>
           </v-toolbar>
@@ -64,8 +57,6 @@
             :weekdays="weekdays"
             @change="updateRange"
           ></v-calendar>
-
-          <!-- @change="updateRange" -->
 
           <v-menu
             v-model="selectedOpen"
@@ -489,7 +480,7 @@ export default {
             })
             .then(() => {
               //重新讀取資料庫
-              // this.getEvents();
+              this.getEvents();
             });
           this.$refs.calendar.checkChange();
           setTimeout(() => this.close(), 10);
