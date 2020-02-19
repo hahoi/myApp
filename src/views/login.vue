@@ -37,7 +37,7 @@
               </v-card-actions>
             </v-card>
           </v-col>
-          <v-col cols="6" v-show="this.$store.state.loading">
+          <v-col cols="6" v-show="this.$store.getters.loading">
             <v-progress-linear color="deep-purple accent-4" indeterminate rounded height="6"></v-progress-linear>
           </v-col>
         </v-row>
@@ -72,7 +72,7 @@ export default {
   },
   components: {},
   created() {
-    this.$store.state.loading = false;
+    this.$store.getters.loading = false;
   },
   mounted() {},
   watch: {},
@@ -86,7 +86,7 @@ export default {
       } 
 
       let vm = this;
-      this.$store.state.loading = true;
+      this.$store.getters.loading = true;
       const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
       if (pattern.test(vm.email)) {
         //用email登入
@@ -116,7 +116,7 @@ export default {
               buttonFalseText: "",
               buttonTrueText: "重試"
             });
-            this.$store.state.loading = false
+            this.$store.getters.loading = false
           });
       }
     }, //login_handle
@@ -159,7 +159,7 @@ export default {
                     });
                   })
                   .then(() => {
-                    setTimeout(() => (this.$store.state.loading = false), 10);
+                    setTimeout(() => (this.$store.getters.loading = false), 10);
                   })
                   .catch(() => {
                     console.log("loginSet error");
@@ -170,7 +170,7 @@ export default {
               "你註冊的Email帳號尚未驗證！<br>請到註冊的郵件信箱收信，點擊連結回傳確認。",
               { title: "警告", buttonFalseText: "", buttonTrueText: "好" }
             );
-            this.$store.state.loading = false
+            this.$store.getters.loading = false
           }
         })
         .catch(error => {
@@ -196,7 +196,7 @@ export default {
             buttonFalseText: "",
             buttonTrueText: "重試"
           });
-          this.$store.state.loading = false
+          this.$store.getters.loading = false
         });
     }
   } //methods

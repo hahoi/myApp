@@ -6,7 +6,7 @@
           <v-btn color="orange" @click="nearreported">顯示近期填報</v-btn>
         </v-col>
         <v-col cols="12">
-          <img src="@/assets/loading.gif" height="40px" v-show="this.$store.state.loading" />
+          <img src="@/assets/loading.gif" height="40px" v-show="this.$store.getters.loading" />
           <v-tree ref="tree1" :data="treeData" :tpl="tpl" />
         </v-col>
         <v-spacer></v-spacer>
@@ -103,7 +103,7 @@ export default {
         })
         .then(() => {
           this.$refs.tree1.searchNodes(
-            `(${this.$store.state.user.department})`
+            `(${this.$store.getters.user.department})`
           );
         });
     },
@@ -126,7 +126,7 @@ export default {
         doc.title = doc.t_title; //還原
       }
       doc.expanded = true; //全部展開
-      //   if(doc.pid == this.$store.state.LevelOneID ) doc.expanded = false //預設只打開第一層
+      //   if(doc.pid == this.$store.getters.LevelOneID ) doc.expanded = false //預設只打開第一層
       if (doc.enddate)
         doc.t_enddate = moment(doc.enddate.toDate()).format("YYYY-MM-DD");
       if (doc.startdate)

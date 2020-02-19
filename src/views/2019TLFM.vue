@@ -1,7 +1,7 @@
 <template>
   <div class="tree">
     <v-container>
-      <v-row align="center" justify="space-around">
+      <v-row align="center" justify="space-around" class="mx-0 px-0">
         <div class="text-center mb-4">
           <v-overlay :opacity="0.5" z-index="100" :value="loading">
             <img src="@/assets/loading.gif" style="height:125px" />
@@ -15,16 +15,41 @@
         </v-col>
         <!-- <v-col cols="2" class="py-0 pl-0 pr-5">
           <v-btn color="blue lighten-4" @click="restsearchFun">重置</v-btn>
-        </v-col> -->
+        </v-col>-->
         <v-col cols="6" class="py-0">
           <v-btn text color="orange" @click="nearreported">顯示幾天內填報的資料</v-btn>
         </v-col>
-        <v-col cols="2" class="py-0 ">
+        <v-col cols="2" class="py-0">
           <v-switch v-model="searchProgress"></v-switch>
         </v-col>
-        <v-col cols="4" class="py-0 px-0">
-          搜尋填報資料
+        <v-col cols="4" class="py-0 px-0">搜尋填報資料</v-col>
+        <v-col cols="10" class="py-0">
+          <v-menu
+            v-model="menu2"
+            :close-on-content-click="false"
+            :nudge-right="40"
+            transition="scale-transition"
+            offset-y
+          >
+            <template v-slot:activator="{ on }">
+              <v-text-field v-model="checkDate" label="選擇檢核日期" v-on="on"></v-text-field>
+            </template>
+            <v-date-picker
+              v-model="checkDate"
+              first-day-of-week="1"
+              locale="zh-TW"
+              @input="menu2 = false"
+            ></v-date-picker>
+          </v-menu>
         </v-col>
+
+        <v-col cols="2" class="py-0 px-0 mx-0">
+          <v-btn color="orange" @click="checkDatehandle">檢核</v-btn>
+        </v-col>
+        <!-- <v-col cols="12" class="py-0">
+          <v-btn color="orange" @click="searchCallback">搜尋練習</v-btn>
+        </v-col>-->
+        <!-- <v-img src="@/assets/loading.gif" height="40px" v-show="loading" /> -->
       </v-row>
     </v-container>
     <v-tree ref="tree1" :data="treeData" :tpl="tpl" />
@@ -56,7 +81,7 @@
             <v-card-text class="px-3">
               <!-- <v-divider></v-divider> -->
               <!-- 子組件渲染 -->
-              <workItem2Detail :propData="todo" @listenToChild="getChildData"></workItem2Detail>
+              <workItem2DetailReadonly :propData="todo"></workItem2DetailReadonly>
             </v-card-text>
           </v-card>
         </v-dialog>
@@ -71,66 +96,40 @@
 </template>
 
 <script>
-import workItem2Detail from "../components/workItem2Detail.vue";
+import workItem2DetailReadonly from "../components/workItem2DetailReadonly.vue";
 
-import { dbDatabase, dbFirestore, databaseName2 } from "@/fb";
+import { dbDatabase, dbFirestore } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
 import ScrollUp from "vue-scroll-up";
 import "vue-scroll-up/dist/style.css";
 
 export default {
-  name: "workItem",
+  name: "",
   data() {
     return {
       loading: true,
       workDetailDialog: false,
       searchword: "",
-      treeData: [], //樹狀，螢幕顯示
-      db_data: [], //db讀取，一維陣列，與資料庫同步
-
-      todo: {}, //傳到子元件資料
+      treeData: [], //樹狀
+      db_data: [], //db讀取，一維陣列
+      todo: {},
       ShowRecentReport: 10, //預設顯示10天內填報資料
       searchProgress: false, //預設不搜尋填報資料
 
       snackbar: false,
       timeout: 2000,
-      databasemessage: ""
+      databasemessage: "",
+
+      checkDate: moment().format("YYYY-MM-DD"), //檢核日期
+      menu2: false
     };
   },
   components: {
-    workItem2Detail,
+    workItem2DetailReadonly,
     ScrollUp
   },
-  created() {
-    //監聽資料庫變化
-    dbFirestore.collection(databaseName2).onSnapshot(res => {
-      const changes = res.docChanges();
-      changes.forEach(change => {
-        if (change.type === "added" && !this.loading) {
-          // console.log(this.$store.getters.user.name, "added");
-          this.databasemessage =
-            this.$store.getters.user.name + " 正在新增資料！";
-          this.snackbar = true;
-          console.log("added data: ", change.doc.data());
-        }
-        if (change.type === "modified") {
-          // console.log("modified");
-          this.databasemessage =
-            this.$store.getters.user.name + " 已經修改資料！";
-          this.snackbar = true;
-          console.log("modified data: ", change.doc.data());
-        }
-        if (change.type === "removed") {
-          // console.log("removed");
-          this.databasemessage =
-            this.$store.getters.user.name + " 已經刪除資料！";
-          this.snackbar = true;
-          console.log("removed data: ", change.doc.data());
-        }
-      });
-    });
-  },
+  created() {},
   mounted() {
     // this.getServerTime();
     this.readData();
@@ -153,13 +152,23 @@ export default {
           }
         });
     },
+    //輸入檢核日期處理檢核
+    checkDatehandle() {
+      //處理檢核前重置所有節點顯示狀態
+      let handleArrayData = com_fun.deepCopy(this.db_data); //深拷貝一份避免副作用
+
+      let currentItem = handleArrayData.map(doc => {
+        return this.handleCheckDateNode(doc);
+      });
+      this.treeData = com_fun.arrayToJson(currentItem);
+    },
 
     //讀取DB資料
     readData() {
       this.loading = true;
       this.db_data = []; //清空陣列
       dbFirestore
-        .collection(databaseName2)
+        .collection("TLFMCDV3")
         .get()
         .then(querySnapshot => {
           querySnapshot.forEach(doc => {
@@ -167,8 +176,6 @@ export default {
           });
         })
         .then(() => {
-          //與資料庫同步的陣列 this.db_data，更新資料庫時須同時更新 db_data
-          //操作時須防止副作用更改到 db_data
           this.handleData(this.db_data);
         })
         .then(() => {
@@ -184,6 +191,8 @@ export default {
       // 此處要特別注意，arrayToTree前一定要深拷貝一份避免副作用(被加入children)
       let tempArray = com_fun.deepCopy(currentArrayData); //深拷貝一份避免副作用
       this.treeData = com_fun.arrayToJson(tempArray);
+      // console.log(currentArrayData, this.db_data)//測試是否被加入children
+      return currentArrayData;
     },
 
     //處理每個節點顯示狀態
@@ -436,12 +445,8 @@ export default {
           cache.expanded = true; //全部展開
           return cache; //回傳複製替換過的一份
         });
-
-      // console.log(matchArr);
-      // 此處要特別注意，arrayToTree前一定要深拷貝一份避免副作用(被加入children)
-      // matchArr 已經複製過，不再影響db_data
+      // console.table(matchArr);
       this.treeData = com_fun.arrayToTree(matchArr);
-      // console.log(this.treeData);
     },
 
     //處理樹狀結構，按一下顯示詳細資料
@@ -482,103 +487,57 @@ export default {
       );
     },
 
-    //從子層傳回父層的資料，更新螢幕畫面，並進行存檔
-    getChildData(childData) {
-      console.log("retuen childData", childData);
-
-      //=====更改tree Array，更新螢幕畫面=======
-      // let nodeArray = this.$refs.tree1.getNodes(); //取的全部陣列 []
-
-      let nodeArray = this.db_data;
-      nodeArray.forEach(doc => {
-        //從全部的陣列，找到要update的物件，試過用find會失敗(find會建立新陣列)
-        if (doc.id === childData.id) {
-          // console.log("childData", childData);
-          doc.title = doc.t_title; //還原title，處理螢幕畫面title顏色用
-          doc.depart = childData.depart;
-          doc.endDate = childData.endDate;
-          doc.startDate = childData.startDate;
-          doc.status = childData.status;
-          doc.progress = childData.progress;
-          if (childData.memo) {
-            doc.memo = childData.memo;
-          }
-          //處理每個節點顯示狀態
-          doc = this.handleNodeData(doc);
-        }
-      });
-
-      //arrayToTree 更新螢幕畫面
-      let tempArray = com_fun.deepCopy(nodeArray); //深拷貝一份避免副作用
-      this.treeData = com_fun.arrayToTree(tempArray);
-      // this.$forceUpdate();
-      // window.location.reload()
-
-      //=====更改fireStore資料庫=======
-      let data = {
-        //設定符合firestore資料格式
-        depart: childData.depart,
-        endDate: childData.endDate,
-        startDate: childData.startDate,
-        status: childData.status,
-        //處理progress
-        progress: childData.progress
-      };
-      if (childData.memo) {
-        data.memo = childData.memo;
-      }
-
-      dbFirestore
-        .collection(databaseName2)
-        .doc(childData.id)
-        .update(data)
-        .then(() => {
-          console.log("資料庫已被更新！", data);
-        });
-    },
-
     workDetailClose() {
-      // //若顯示資料必須重新整理時，目前暫時沒用到
-      // if (this.$store.getters.mustUpdate) {
-      //   this.handleData(this.db_data);
-      //   this.$store.commit("setmustUpdate", false);
-      // }
       this.workDetailDialog = false;
     },
-    // getServerTime() {
-    //   //取得系統時間
-    //   const offsetRef = dbDatabase.ref(".info/serverTimeOffset");
-    //   offsetRef.on("value", function(snap) {
-    //     let offset = snap.val();
-    //     let estimatedServerTimeMs = new Date().getTime() + offset;
-    //     console.log(moment().format("YYYY-MM-DD hh:ss"));
-    //     console.log(moment(estimatedServerTimeMs).format("YYYY-MM-DD hh:ss"));
-    //     return estimatedServerTimeMs;
-    //   });
-    // }
-    searchCallback() {
-      let a = b => {
-        console.log("a");
-        if (typeof b === "function") {
-          b();
-        }
-      };
 
-      let b = c => {
-        console.log("b");
-        if (typeof c === "function") {
-          c();
-        }
-      };
+    //處理檢核日期每個節點顯示狀態
+    handleCheckDateNode(doc) {
+      // let currentItem = handleArrayData.map(doc => {
+      if (!doc.t_title) {
+        doc.t_title = doc.title; //第一次，先存起來
+      } else {
+        doc.title = doc.t_title; //還原
+      }
+      // doc.expanded = true; //全部展開
+      //預設只打開第一層
+      if (doc.pid == this.$store.getters.LevelOneID) doc.expanded = false;
 
-      let c = () => {
-        console.log("c");
-      };
-      // a();
-      // b();
-      // c();
-      // a(c(b));
-      b(a(c));
+      let days = "";
+      if (
+        moment(doc.startDate) < moment(this.checkDate) &&
+        doc.status != "完成"
+      ) {
+        //計算落後天數
+        days = moment(doc.endDate).diff(moment(this.checkDate), "day");
+        // console.log(days);
+        doc.remaindays = `<span class="red--text">${days}天</span>`;
+      } else {
+        doc.remaindays = "";
+      }
+
+      if (doc.status == "完成") {
+        //完成顯示綠色
+        doc.title = "<span class='green--text'>" + doc.title + "</span>";
+      }
+      if (doc.status == "不顯示" || doc.status == "停止") return {}; // 不顯示、停止，回傳空物件
+
+      if (days <= 0 && days !== "") {
+        //剩餘天數為負數，顯示為紅色
+        // doc.title = "<span class='red--text'>" + doc.title + "</span>";
+        doc.title = `<span class="red--text">${doc.title}</span>
+                                <span class="deep-purple--text">(期限:${doc.endDate})</span >`;
+      }
+      if (
+        moment(this.checkDate).isBefore(doc.startDate) ||
+        doc.startDate == ""
+      ) {
+        //已設定開始日期，但時間未到
+        doc.title = "<span class='grey--text'>" + doc.title + "</span>";
+      }
+      doc.ptitle = doc.title;
+
+      return doc; //object
     }
   }
 };

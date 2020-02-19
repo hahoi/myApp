@@ -100,6 +100,12 @@ export const powerRouter = [
         component: () => import('@/views/MultiDatabase'),
         meta: { title: '兩個資料庫', role: '兩個資料庫', icon: "mdi-contact-mail"  , divider: true}
       },
+      {
+        path: '/2019TLFM',
+        // name: '2019TLFM',
+        component: () => import('@/views/2019TLFM'),
+        meta: { title: '2019台灣燈會', role: '2019台灣燈會', icon: "mdi-brightness-7"  , divider: true}
+      },
 
     ]
   }

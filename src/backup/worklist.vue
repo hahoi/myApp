@@ -16,7 +16,7 @@
         </v-col>
       </v-row>
     </v-container>
-    <img src="@/assets/loading.gif" height="40px" v-show="this.$store.state.loading" />
+    <img src="@/assets/loading.gif" height="40px" v-show="this.$store.getters.loading" />
     <v-tree ref="tree1" :data="treeData" :tpl="tpl" />
 
     <!-- =========== 顯示詳細資料 ========= -->
@@ -90,7 +90,7 @@ export default {
     dbFirestore.collection(databaseName).onSnapshot(res => {
       const changes = res.docChanges();
       changes.forEach(change => {
-        if (change.type === "added" && !this.$store.state.loading) {
+        if (change.type === "added" && !this.$store.getters.loading) {
           // console.log(this.$store.getters.user.name, "added");
           this.databasemessage =
             this.$store.getters.user.name + " 正在新增資料！";
@@ -172,7 +172,7 @@ export default {
         doc.title = doc.t_title; //還原
       }
       //   doc.expanded = true; //全部展開
-      //   if(doc.pid == this.$store.state.LevelOneID ) doc.expanded = false //預設只打開第一層
+      //   if(doc.pid == this.$store.getters.LevelOneID ) doc.expanded = false //預設只打開第一層
       if (doc.enddate)
         doc.t_enddate = moment(doc.enddate.toDate()).format("YYYY-MM-DD");
       if (doc.startdate)

@@ -10,13 +10,13 @@
         </v-col>
       </v-row>
     </v-container>
-    <img src="@/assets/loading.gif" height="40px" v-show="this.$store.state.loading" />
+    <img src="@/assets/loading.gif" height="40px" v-show="this.$store.getters.loading" />
     <v-tree ref="tree1" :data="treeData" :tpl="tpl" :draggable="true" @drag-node-end="MyDrag" />
     <v-container>
       <v-row>
         <v-spacer></v-spacer>
         <v-col cols="6">
-          <v-btn color="info" @click="saveCurrentState" v-show="!this.$store.state.loading">儲存階層收合狀態</v-btn>
+          <v-btn color="info" @click="saveCurrentState" v-show="!this.$store.getters.loading">儲存階層收合狀態</v-btn>
         </v-col>
         <v-spacer></v-spacer>
       </v-row>
@@ -64,7 +64,7 @@ export default {
     dbFirestore.collection(databaseName).onSnapshot(res => {
       const changes = res.docChanges();
       changes.forEach(change => {
-        if (change.type === "added" && !this.$store.state.loading) {
+        if (change.type === "added" && !this.$store.getters.loading) {
           // console.log(this.$store.getters.user.name, "added");
           this.databasemessage =
             this.$store.getters.user.name + " 正在新增資料！";

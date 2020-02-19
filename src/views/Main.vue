@@ -72,22 +72,13 @@ export default {
     drawer: null
   }),
   created() {
-    dbFirestore
-      .collection("SettingData")
-      .doc("system") 
-      .get()
-      .then(doc => {
-        let temp = doc.data();
-        this.$store.commit("setApplicationTexte", temp.ApplicationText);
-        this.$store.commit("setfooterText", temp.footerText);
-        this.$store.commit("setadmTelephone", temp.admTelephone);
-        this.$store.commit("setprojectEndDate", temp.projectEndDate);
-        this.$store.commit("setLevelOneID", temp.LevelOneID);
-      });
+    if(this.$store.getters.ApplicationText == ""){
+      this.loadSysPara()
+    }
   },
   mounted() {
     if (powerRouter[0].children.length == 0) {
-      let tel = this.$store.state.admTelephone
+      let tel = this.$store.getters.admTelephone
       console.log(tel)
       this.$confirm(`功能權限尚未設定，請電洽系統管理員！(${tel})`, {
         title: "警告",
@@ -107,6 +98,23 @@ export default {
     }
   },
   methods: {
+    loadSysPara(){
+    dbFirestore
+      .collection("SettingData")
+      .doc("system") 
+      .get()
+      .then(doc => {
+        let temp = doc.data();
+        this.$store.commit("setApplicationTexte", temp.ApplicationText);
+        this.$store.commit("setfooterText", temp.footerText);
+        this.$store.commit("setadmTelephone", temp.admTelephone);
+        this.$store.commit("setprojectEndDate", temp.projectEndDate);
+        this.$store.commit("setLevelOneID", temp.LevelOneID);
+      })
+      // .then(()=>{
+      //         console.log(this.$store.getters.ApplicationText)
+      // });
+    },
     logout() {
       this.$store
         .dispatch("logout")

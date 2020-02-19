@@ -107,7 +107,7 @@ export default {
             // const sf = () => {
             //   setTimeout(() => {
             //     this.$refs.tree1.searchNodes(
-            //       `(${this.$store.state.user.department})`
+            //       `(${this.$store.getters.user.department})`
             //     );
             //   }, 10);
             // };
@@ -134,7 +134,7 @@ export default {
         .then(() => {
           //搜尋填報單位
           this.$refs.tree1.searchNodes(
-            `(${this.$store.state.user.department})`
+            `(${this.$store.getters.user.department})`
           );
           this.loading = false;
         });
@@ -159,7 +159,7 @@ export default {
         doc.title = doc.t_title; //還原
       }
       doc.expanded = true; //全部展開
-      //   if(doc.pid == this.$store.state.LevelOneID ) doc.expanded = false //預設只打開第一層
+      //   if(doc.pid == this.$store.getters.LevelOneID ) doc.expanded = false //預設只打開第一層
 
       let days = "";
       if (moment(doc.startDate) < moment() && doc.status != "完成") {
@@ -228,7 +228,7 @@ export default {
               ctx.parent.nodeSelected(ctx.props.node);
 
               //不是負責的單位，不能填報
-              if (this.$store.state.user.department !== node.depart) {
+              if (this.$store.getters.user.department !== node.depart) {
                 this.ShowAlert("不是負責的單位，不能填報！", 1000);
                 return false;
               }
@@ -295,7 +295,7 @@ export default {
       let tempArray = com_fun.deepCopy(nodeArray); //深拷貝一份避免副作用
       this.treeData = com_fun.arrayToTree(tempArray);
       //限制只顯示填報單位
-      // this.$refs.tree1.searchNodes(`(${this.$store.state.user.department})`);
+      // this.$refs.tree1.searchNodes(`(${this.$store.getters.user.department})`);
 
       //=====更改fireStore資料庫=======
       let data = {

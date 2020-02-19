@@ -10,14 +10,18 @@
         </v-col>
       </v-row>
     </v-container>
-    <img src="@/assets/loading.gif" height="40px" v-show="this.$store.state.loading" />
+    <img src="@/assets/loading.gif" height="40px" v-show="this.$store.getters.loading" />
     <v-tree ref="tree1" :data="treeData" :tpl="tpl" :draggable="true" @drag-node-end="MyDrag" />
-          <scroll-up :scroll-duration="1000"></scroll-up>
+    <scroll-up :scroll-duration="1000"></scroll-up>
     <v-container>
       <v-row>
         <v-spacer></v-spacer>
         <v-col cols="6">
-          <v-btn color="info" @click="saveCurrentState" v-show="!this.$store.state.loading">儲存階層收合狀態</v-btn>
+          <v-btn
+            color="info"
+            @click="saveCurrentState"
+            v-show="!this.$store.getters.loading"
+          >儲存階層收合狀態</v-btn>
         </v-col>
 
         <span v-show="progressShow" class="mx-10">
@@ -70,7 +74,7 @@ export default {
     dbFirestore.collection(databaseName2).onSnapshot(res => {
       const changes = res.docChanges();
       changes.forEach(change => {
-        if (change.type === "added" && !this.$store.state.loading) {
+        if (change.type === "added" && !this.$store.getters.loading) {
           // console.log(this.$store.getters.user.name, "added");
           this.databasemessage =
             this.$store.getters.user.name + " 正在新增資料！";
@@ -93,16 +97,40 @@ export default {
   },
   mounted() {
     this.$store.commit("setLoading", true);
+    let MyApp_data = [];
     dbFirestore
       .collection(databaseName2)
       .get()
       .then(querySnapshot => {
-        let TLFM_data = [];
         querySnapshot.forEach(doc => {
-          TLFM_data.push(doc.data());
+          MyApp_data.push(doc.data());
         });
-        this.treeData = com_fun.arrayToJson(TLFM_data);
+        this.treeData = com_fun.arrayToJson(MyApp_data);
         this.$store.commit("setLoading", false);
+      })
+      .then(() => {
+        if (MyApp_data.length == 0) {
+          let data = {
+            title: this.$store.getters.ApplicationText,
+            id: this.$store.getters.LevelOneID,
+            pid: "0",
+            expanded: true,
+            depart: "", //設定初值，db在update時有key name才不會出錯
+            endDate: moment().format("YYYY-MM-DD") || "",
+            startDate: moment().format("YYYY-MM-DD") || "",
+            status: "",
+            progress: []
+          };
+
+          dbFirestore
+            .collection(databaseName2)
+            .doc(this.$store.getters.LevelOneID)
+            .set(data)
+            .then(() => {
+              MyApp_data.push(data);
+              this.treeData = com_fun.arrayToJson(MyApp_data);
+            });
+        }
       });
   },
   watch: {
@@ -307,11 +335,11 @@ export default {
             .collection(databaseName2)
             .get()
             .then(function(querySnapshot) {
-              let TLFM_data = [];
+              let MyApp_data = [];
               querySnapshot.forEach(function(doc) {
-                TLFM_data.push(doc.data());
+                MyApp_data.push(doc.data());
               });
-              vm.treeData = com_fun.arrayToJson(TLFM_data);
+              vm.treeData = com_fun.arrayToJson(MyApp_data);
               // window.location.reload()
             });
         }

@@ -138,7 +138,7 @@ export default {
       }
       // doc.expanded = true; //全部展開
       //預設只打開第一層
-      if (doc.pid == this.$store.state.LevelOneID) doc.expanded = false;
+      if (doc.pid == this.$store.getters.LevelOneID) doc.expanded = false;
 
       let days = "";
       if (

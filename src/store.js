@@ -5,7 +5,7 @@ Vue.use(Vuex)
 
 const state = {
   device: "",
-  loading: true,  // this.$store.state.loading
+  loading: true,  // this.$store.getters.loading
   userId: sessionStorage.getItem('uid')=== "undefined" ? "" : sessionStorage.getItem('uid') ,
   user:null,
 
@@ -13,7 +13,7 @@ const state = {
   footerText : "",
   admTelephone : "",
   projectEndDate: "", //專案結束日期
-  LevelOneID: "",  // this.$store.state.LevelOneID 
+  LevelOneID: "",  // this.$store.getters.LevelOneID 
   //權限控管
   // role: null,
   newRouter: [],
@@ -25,6 +25,10 @@ const getters = {
   loading: state => state.loading,
   userId: state => state.userId,
   user: state => state.user,
+  ApplicationText: state => state.ApplicationText,
+  footerText: state => state.footerText,
+  admTelephone: state => state.admTelephone,
+  LevelOneID: state => state.LevelOneID,
   projectEndDate: state => state.projectEndDate, 
   // role: state => state.user.role,
   newRouter: state => state.newRouter,
