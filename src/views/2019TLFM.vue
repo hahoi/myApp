@@ -7,49 +7,52 @@
             <img src="@/assets/loading.gif" style="height:125px" />
           </v-overlay>
         </div>
-        <v-col cols="10" class="py-0">
-          <v-text-field label="關鍵字搜尋..." v-model="searchword"></v-text-field>
-        </v-col>
-        <v-col cols="2" class="py-0 px-0 mx-0">
-          <v-btn color="info" @click="searchFun">搜尋</v-btn>
-        </v-col>
-        <!-- <v-col cols="2" class="py-0 pl-0 pr-5">
-          <v-btn color="blue lighten-4" @click="restsearchFun">重置</v-btn>
-        </v-col>-->
-        <v-col cols="6" class="py-0">
-          <v-btn text color="orange" @click="nearreported">顯示幾天內填報的資料</v-btn>
-        </v-col>
-        <v-col cols="2" class="py-0">
-          <v-switch v-model="searchProgress"></v-switch>
-        </v-col>
-        <v-col cols="4" class="py-0 px-0">搜尋填報資料</v-col>
-        <v-col cols="10" class="py-0">
-          <v-menu
-            v-model="menu2"
-            :close-on-content-click="false"
-            :nudge-right="40"
-            transition="scale-transition"
-            offset-y
-          >
-            <template v-slot:activator="{ on }">
-              <v-text-field v-model="checkDate" label="選擇檢核日期" v-on="on"></v-text-field>
-            </template>
-            <v-date-picker
-              v-model="checkDate"
-              first-day-of-week="1"
-              locale="zh-TW"
-              @input="menu2 = false"
-            ></v-date-picker>
-          </v-menu>
-        </v-col>
 
-        <v-col cols="2" class="py-0 px-0 mx-0">
-          <v-btn color="orange" @click="checkDatehandle">檢核</v-btn>
-        </v-col>
-        <!-- <v-col cols="12" class="py-0">
-          <v-btn color="orange" @click="searchCallback">搜尋練習</v-btn>
-        </v-col>-->
-        <!-- <v-img src="@/assets/loading.gif" height="40px" v-show="loading" /> -->
+        <v-expansion-panels accordion>
+          <v-expansion-panel>
+            <v-expansion-panel-header>功能</v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-row align="center" justify="space-around" class="mx-0 px-0">
+                <v-col cols="10" class="py-0">
+                  <v-text-field label="關鍵字搜尋..." v-model="searchword"></v-text-field>
+                </v-col>
+                <v-col cols="2" class="py-0 px-0 mx-0">
+                  <v-btn color="info" @click="searchFun">搜尋</v-btn>
+                </v-col>
+                <v-col cols="6" class="py-0">
+                  <v-btn text color="orange" @click="nearreported">顯示幾天內填報的資料</v-btn>
+                </v-col>
+                <v-col cols="2" class="py-0">
+                  <v-switch v-model="searchProgress"></v-switch>
+                </v-col>
+                <v-col cols="4" class="py-0 px-0">搜尋填報資料</v-col>
+                <v-col cols="10" class="py-0">
+                  <v-menu
+                    v-model="menu2"
+                    :close-on-content-click="false"
+                    :nudge-right="40"
+                    transition="scale-transition"
+                    offset-y
+                  >
+                    <template v-slot:activator="{ on }">
+                      <v-text-field v-model="checkDate" label="選擇檢核日期" v-on="on"></v-text-field>
+                    </template>
+                    <v-date-picker
+                      v-model="checkDate"
+                      first-day-of-week="1"
+                      locale="zh-TW"
+                      @input="menu2 = false"
+                    ></v-date-picker>
+                  </v-menu>
+                </v-col>
+
+                <v-col cols="2" class="py-0 px-0 mx-0">
+                  <v-btn color="orange" @click="checkDatehandle">檢核</v-btn>
+                </v-col>
+              </v-row>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
       </v-row>
     </v-container>
     <v-tree ref="tree1" :data="treeData" :tpl="tpl" />
