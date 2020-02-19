@@ -189,7 +189,6 @@ export default {
         });
       }
       let days = "";
-      let remdayshow = "";
       if (moment(doc.t_startdate) < moment() && doc.status != "完成") {
         doc.remaindays = moment(moment(doc.t_enddate).diff(moment())).format(
           "D"

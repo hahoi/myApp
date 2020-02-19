@@ -240,7 +240,6 @@ export default {
         this.propData.memo = childData.memo;
       }
       let days = "";
-      let remdayshow = "";
       if (
         moment(this.propData.t_startdate) < moment() &&
         this.propData.status != "完成"

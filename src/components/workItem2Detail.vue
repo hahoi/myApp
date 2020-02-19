@@ -227,7 +227,6 @@ export default {
 
       //下面是在更新detail詳細資料畫面中的剩餘時間，title顏色還沒變
       let days = "";
-      let remdayshow = "";
       if (
         moment(this.propData.startDate) < moment() &&
         this.propData.status != "完成"

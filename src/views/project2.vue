@@ -116,7 +116,7 @@ export default {
             pid: "0",
             expanded: true,
             depart: "", //設定初值，db在update時有key name才不會出錯
-            endDate: moment().format("YYYY-MM-DD") || "",
+            endDate: this.$store.getters.projectEndDate, 
             startDate: moment().format("YYYY-MM-DD") || "",
             status: "",
             progress: []

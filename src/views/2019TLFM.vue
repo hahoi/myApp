@@ -215,7 +215,6 @@ export default {
       }
       //計算落後天數
       let days = "";
-      let remdayshow = "";
       //已經開始，還沒完成，結束日已超過今天，就是落後，天數顯示紅色
       if (moment(doc.startDate) < moment() && doc.status != "完成") {
         days = moment(doc.endDate).diff(moment(), "day");
