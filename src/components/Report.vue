@@ -115,5 +115,10 @@ export default {
 
 <style>
 @media print {
+  .backButton {
+    display: none;
+  }
+
 }
+
 </style>

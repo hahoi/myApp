@@ -656,9 +656,6 @@ export default {
 .halo-tree {
   padding: 0px;
 }
-.v-expansion-panel-content__wrap{
-  padding: 0px;
-}
 
 @media print {
   .backButton {
