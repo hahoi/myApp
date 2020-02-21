@@ -225,7 +225,7 @@ export default {
         this.propData.memo = childData.memo;
       }
 
-      //下面是在更新detail詳細資料畫面中的剩餘時間，title顏色還沒變
+      //下面是在更新detail詳細資料畫面中的剩餘時間，title顏色還沒變 
       let days = "";
       if (
         moment(this.propData.startDate) < moment() &&

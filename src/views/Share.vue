@@ -7,31 +7,83 @@
             <img src="@/assets/loading.gif" style="height:125px" />
           </v-overlay>
         </div>
-        <v-col cols="10" class="py-0">
-          <v-text-field label="關鍵字搜尋..." v-model="searchword"></v-text-field>
-        </v-col>
-        <v-col cols="2" class="py-0 px-0 mx-0">
-          <v-btn color="info" @click="searchFun">搜尋</v-btn>
-        </v-col>
-        <!-- <v-col cols="2" class="py-0 pl-0 pr-5">
-          <v-btn color="blue lighten-4" @click="restsearchFun">重置</v-btn>
-        </v-col> -->
-        <v-col cols="6" class="py-0">
-          <v-btn text color="orange" @click="nearreported">顯示幾天內填報的資料</v-btn>
-        </v-col>
-        <v-col cols="2" class="py-0 ">
-          <v-switch v-model="searchProgress"></v-switch>
-        </v-col>
-        <v-col cols="4" class="py-0 px-0">
-          搜尋填報資料
-        </v-col>
-        <!-- <v-col cols="12" class="py-0">
-          <v-btn color="orange" @click="searchCallback">搜尋練習</v-btn>
-        </v-col>-->
-        <!-- <v-img src="@/assets/loading.gif" height="40px" v-show="loading" /> -->
+
+        <v-expansion-panels accordion>
+          <v-expansion-panel>
+            <v-expansion-panel-header class=""><span class="subtitle-1 font-weight-bold">功能選項</span></v-expansion-panel-header>
+            <v-expansion-panel-content>
+              <v-row align="center" justify="space-around" class="mx-0 px-0  ">
+                <v-col cols="8" class="py-0 px-0">
+                  <v-text-field label="關鍵字搜尋..." v-model="searchword"></v-text-field>
+                </v-col>
+                <v-col cols="2" class="py-0 px-0 mx-0">
+                  <v-btn color="info" @click="searchFun">搜尋</v-btn>
+                </v-col>
+              </v-row>
+              <v-row align="center" justify="space-around" class="mx-0 px-0  ">
+                <v-col cols="6" class="py-0">
+                  <v-btn text color="orange" @click="nearreported">顯示幾天內填報的資料</v-btn>
+                </v-col>
+                <v-col cols="2" class="py-0">
+                  <v-switch v-model="searchProgress"></v-switch>
+                </v-col>
+                <v-col cols="4" class="py-0 px-0">搜尋填報資料</v-col>
+              </v-row>
+              <v-row align="center" justify="space-around" class="mx-0 px-0  ">
+                <v-col cols="8" class="py-0">
+                  <v-menu
+                    v-model="menu2"
+                    :close-on-content-click="false"
+                    :nudge-right="40"
+                    transition="scale-transition"
+                    offset-y
+                  >
+                    <template v-slot:activator="{ on }">
+                      <v-text-field v-model="checkDate" label="選擇檢核日期" v-on="on"></v-text-field>
+                    </template>
+                    <v-date-picker
+                      v-model="checkDate"
+                      first-day-of-week="1"
+                      locale="zh-TW"
+                      @input="menu2 = false"
+                    ></v-date-picker>
+                  </v-menu>
+                </v-col>
+
+                <v-col cols="4" class="py-0 px-0 mx-0">
+                  <v-btn text color="orange" @click="checkDatehandle">
+                    <span class="title">期程檢核</span>
+                  </v-btn>
+                </v-col>
+              </v-row>
+              <v-row align="center" justify="space-around" class="mx-0 px-0  ">
+                <v-col cols="3" class="py-0 px-0 mx-0">
+                  <v-checkbox v-model="multiple" label="挑選框"></v-checkbox>
+                </v-col>
+
+                <v-col cols="8">
+                  <v-btn text color="indigo lighten-2" @click="report">
+                    <span class="title">列印輸出</span>
+                  </v-btn>
+                </v-col>
+              </v-row>
+            </v-expansion-panel-content>
+          </v-expansion-panel>
+        </v-expansion-panels>
       </v-row>
     </v-container>
-    <v-tree ref="tree1" :data="treeData" :tpl="tpl" />
+
+    <!-- ==== v-tree ========-->
+    <v-tree
+      ref="tree1"
+      :data="treeData"
+      :tpl="tpl"
+      :multiple="multiple"
+      :halfcheck="halfcheck"
+      @node-click="nodeCheckClick"
+      @node-check="nodeCheckClick"
+    />
+
     <scroll-up :scroll-duration="1000"></scroll-up>
 
     <!-- =========== 顯示詳細資料 ========= -->
@@ -67,6 +119,20 @@
       </v-row>
     </v-container>
 
+    <!-- =========== 列印輸出 ========= -->
+    <v-container>
+      <v-row>
+        <v-dialog
+          v-model="ReportDialog"
+          fullscreen
+          hide-overlay
+          transition="dialog-right-transition"
+        >
+          <!-- 子組件渲染 -->
+          <Report :propData="selectedItems" @listenToChild="getChildData"></Report>
+        </v-dialog>
+      </v-row>
+    </v-container>
     <v-snackbar v-model="snackbar" :timeout="timeout">
       {{ databasemessage }}
       <v-btn dark text @click="snackbar = false">Close</v-btn>
@@ -76,20 +142,23 @@
 
 <script>
 import workItem2DetailReadonly from "../components/workItem2DetailReadonly.vue";
+import Report from "../components/Report.vue";
 
-import { dbDatabase, dbFirestore, databaseName2 } from "@/fb";
+import { dbFirestore, databaseName2 } from "@/fb";
 import com_fun from "../utils/function";
 import moment from "moment";
 import ScrollUp from "vue-scroll-up";
 import "vue-scroll-up/dist/style.css";
 
 export default {
-  name: "workItem",
+  name: "",
   data() {
     return {
       loading: true,
       workDetailDialog: false,
+      ReportDialog: false,
       searchword: "",
+
       treeData: [], //樹狀
       db_data: [], //db讀取，一維陣列
       todo: {},
@@ -98,11 +167,20 @@ export default {
 
       snackbar: false,
       timeout: 2000,
-      databasemessage: ""
+      databasemessage: "",
+
+      checkDate: moment().format("YYYY-MM-DD"), //檢核日期
+      menu2: false,
+
+      //v-tree屬性
+      halfcheck: false,
+      multiple: false,
+      selectedItems: []
     };
   },
   components: {
     workItem2DetailReadonly,
+    Report,
     ScrollUp
   },
   created() {},
@@ -127,6 +205,16 @@ export default {
             this.handleData(this.db_data);
           }
         });
+    },
+    //輸入檢核日期處理檢核
+    checkDatehandle() {
+      //處理檢核前重置所有節點顯示狀態
+      let handleArrayData = com_fun.deepCopy(this.db_data); //深拷貝一份避免副作用
+
+      let currentItem = handleArrayData.map(doc => {
+        return this.handleCheckDateNode(doc);
+      });
+      this.treeData = com_fun.arrayToJson(currentItem);
     },
 
     //讀取DB資料
@@ -412,7 +500,6 @@ export default {
         });
       // console.table(matchArr);
       this.treeData = com_fun.arrayToTree(matchArr);
-
     },
 
     //處理樹狀結構，按一下顯示詳細資料
@@ -453,22 +540,90 @@ export default {
       );
     },
 
-
-
     workDetailClose() {
       this.workDetailDialog = false;
     },
-    // getServerTime() {
-    //   //取得系統時間
-    //   const offsetRef = dbDatabase.ref(".info/serverTimeOffset");
-    //   offsetRef.on("value", function(snap) {
-    //     let offset = snap.val();
-    //     let estimatedServerTimeMs = new Date().getTime() + offset;
-    //     console.log(moment().format("YYYY-MM-DD hh:ss"));
-    //     console.log(moment(estimatedServerTimeMs).format("YYYY-MM-DD hh:ss"));
-    //     return estimatedServerTimeMs;
-    //   });
-    // }
+
+    //處理檢核日期每個節點顯示狀態
+    handleCheckDateNode(doc) {
+      // let currentItem = handleArrayData.map(doc => {
+      if (!doc.t_title) {
+        doc.t_title = doc.title; //第一次，先存起來
+      } else {
+        doc.title = doc.t_title; //還原
+      }
+      // doc.expanded = true; //全部展開
+      //預設只打開第一層
+      if (doc.pid == this.$store.getters.LevelOneID) doc.expanded = false;
+
+      let days = "";
+      if (
+        moment(doc.startDate) < moment(this.checkDate) &&
+        doc.status != "完成"
+      ) {
+        //計算落後天數
+        days = moment(doc.endDate).diff(moment(this.checkDate), "day");
+        // console.log(days);
+        doc.remaindays = `<span class="red--text">${days}天</span>`;
+      } else {
+        doc.remaindays = "";
+      }
+
+      if (doc.status == "完成") {
+        //完成顯示綠色
+        doc.title = "<span class='green--text'>" + doc.title + "</span>";
+      }
+      if (doc.status == "不顯示" || doc.status == "停止") return {}; // 不顯示、停止，回傳空物件
+
+      if (days <= 0 && days !== "") {
+        //剩餘天數為負數，顯示為紅色
+        // doc.title = "<span class='red--text'>" + doc.title + "</span>";
+        doc.title = `<span class="red--text">${doc.title}</span>
+                                <span class="deep-purple--text">(期限:${doc.endDate})</span >`;
+      }
+      if (
+        moment(this.checkDate).isBefore(doc.startDate) ||
+        doc.startDate == ""
+      ) {
+        //已設定開始日期，但時間未到
+        doc.title = "<span class='grey--text'>" + doc.title + "</span>";
+      }
+      doc.ptitle = doc.title;
+
+      return doc; //object
+    },
+    report() {
+      let checkedNode = [];
+      if (this.multiple) {
+        checkedNode = this.$refs.tree1.getCheckedNodes(true);
+        // console.log(checkedNode);
+      }
+      this.selectedItems = checkedNode.map(x => {
+        let progress = "";
+        if (x.progress.length > 0) {
+          progress = `${x.progress[0].pgdesc}(${x.progress[0].pgdate})`;
+        }
+
+        return {
+          id: x.id,
+          depart: com_fun.RemoveHTML(x.depart),
+          endDate: com_fun.RemoveHTML(x.endDate),
+          title: com_fun.RemoveHTML(x.t_title),
+          progress: com_fun.RemoveHTML(progress)
+        };
+      });
+      this.ReportDialog = true;
+    },
+    nodeCheckClick(node, selected) {
+      // console.log(node, selected);
+    },
+    copyText() {},
+    getChildData(childData) {
+      console.log("retuen childData", childData);
+      this.ReportDialog = false;
+    },
+
+    //Callback練習
     searchCallback() {
       let a = b => {
         console.log("a");
@@ -500,5 +655,14 @@ export default {
 <style scoped>
 .halo-tree {
   padding: 0px;
+}
+.v-expansion-panel-content__wrap{
+  padding: 0px;
+}
+
+@media print {
+  .backButton {
+    display: none;
+  }
 }
 </style>

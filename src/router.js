@@ -18,7 +18,7 @@ export const powerRouter = [
         path: '/',
         name: 'Home',
         component: () => import('@/views/Home'),
-        meta: { title: '首頁', role: '首頁', icon : 'home' , divider: true}
+        meta: { title: '首頁', role: '首頁', icon: 'home', divider: true }
       },
       {
         path: '/Fillin2',
@@ -38,17 +38,17 @@ export const powerRouter = [
       //   component: () => import('@/views/Calendars1'),
       //   meta: { title: '行事曆1', role: '行事曆1', icon: "mdi-calendar-range" }
       // },
-      {
-        path: '/Pcalendar2',
-        // name: 'Pcalendar2',
-        component: () => import('@/views/Pcalendar2'),
-        meta: { title: '期程檢核', role: '期程檢核', icon: "mdi-calendar-multiple-check" }
-      },
+      // {
+      //   path: '/Pcalendar2',
+      //   // name: 'Pcalendar2',
+      //   component: () => import('@/views/Pcalendar2'),
+      //   meta: { title: '期程檢核', role: '期程檢核', icon: "mdi-calendar-multiple-check" }
+      // },
       {
         path: '/Share',
         // name: 'Share',
         component: () => import('@/views/Share'),
-        meta: { title: '合作分享', role: '合作分享', icon: "mdi-share-variant", divider: true}
+        meta: { title: '綜合查詢', role: '綜合查詢', icon: "mdi-share-variant", divider: true }
       },
       {
         path: '/project2',
@@ -66,13 +66,13 @@ export const powerRouter = [
         path: '/Message',
         // name: 'Message',
         component: () => import('@/views/Message'),
-        meta: { title: '訊息管理', role: '訊息管理', icon: "mdi-message-alert-outline"  }
+        meta: { title: '訊息管理', role: '訊息管理', icon: "mdi-message-alert-outline" }
       },
       {
         path: '/Department',
         // name: 'department',
         component: () => import('@/views/Department'),
-        meta: { title: '單位管理', role: '單位管理', icon: "mdi-account-group"  , divider: true}
+        meta: { title: '單位管理', role: '單位管理', icon: "mdi-account-group", divider: true }
       },
 
       {
@@ -88,23 +88,23 @@ export const powerRouter = [
         component: () => import('@/views/SysParaSet'),
         meta: { title: '系統參數設定', role: '系統參數設定', icon: "mdi-file-settings-outline", divider: true }
       },
-      {
-        path: '/DBstructureEX',
-        // name: 'DBstructureEX',
-        component: () => import('@/views/DBstructureEX'),
-        meta: { title: '資料庫結構練習', role: '資料庫結構練習', icon: "mdi-home" }
-      },
-      {
-        path: '/MultiDatabase',
-        // name: 'MultiDatabase',
-        component: () => import('@/views/MultiDatabase'),
-        meta: { title: '兩個資料庫', role: '兩個資料庫', icon: "mdi-contact-mail"  , divider: true}
-      },
+      // {
+      //   path: '/DBstructureEX',
+      //   // name: 'DBstructureEX',
+      //   component: () => import('@/views/DBstructureEX'),
+      //   meta: { title: '資料庫結構練習', role: '資料庫結構練習', icon: "mdi-home" }
+      // },
+      // {
+      //   path: '/MultiDatabase',
+      //   // name: 'MultiDatabase',
+      //   component: () => import('@/views/MultiDatabase'),
+      //   meta: { title: '兩個資料庫', role: '兩個資料庫', icon: "mdi-contact-mail"  , divider: true}
+      // },
       {
         path: '/2019TLFM',
         // name: '2019TLFM',
         component: () => import('@/views/2019TLFM'),
-        meta: { title: '2019台灣燈會', role: '2019台灣燈會', icon: "mdi-brightness-7"  , divider: true}
+        meta: { title: '2019台灣燈會', role: '2019台灣燈會', icon: "mdi-brightness-7", divider: true }
       },
 
     ]
@@ -199,7 +199,7 @@ router.beforeEach((to, from, next) => {
           });
       } else { //有使用者，但沒有store Router，重新儲存newrouter
         // console.log("有使用者資料，但沒有store Router，剛login，重新儲存newrouter")
-        let newrouter =  powerRouter //路由換成主要功能的路由 
+        let newrouter = powerRouter //路由換成主要功能的路由 
         let newchildren = powerRouter[0].children.filter(route => {
           if (route.meta) {
             //檢查 route.mata.role 是否存在 使用者權限陣列 store.getters.role 中

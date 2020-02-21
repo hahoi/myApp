@@ -1,4 +1,4 @@
-<template>
+<template>   
   <div class="tree">
     <v-container>
       <v-row align="center" justify="space-around" class="mx-0 px-0">
@@ -10,7 +10,7 @@
 
         <v-expansion-panels accordion>
           <v-expansion-panel>
-            <v-expansion-panel-header>功能</v-expansion-panel-header>
+            <v-expansion-panel-header>功能選項</v-expansion-panel-header>
             <v-expansion-panel-content>
               <v-row align="center" justify="space-around" class="mx-0 px-0">
                 <v-col cols="10" class="py-0">
