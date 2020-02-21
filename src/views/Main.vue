@@ -69,7 +69,7 @@ export default {
   },
 
   data: () => ({
-    drawer: null
+    drawer: false
   }),
   created() {
     if(this.$store.getters.ApplicationText == ""){

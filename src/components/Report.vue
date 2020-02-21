@@ -114,10 +114,17 @@ export default {
 </script>
 
 <style>
+/* @page{
+  size: A4;
+  margin: 0;
+} */
 @media print {
   .backButton {
     display: none;
   }
+  /* #oContent {
+    page-break-inside:avoid;
+  } */
 
 }
 
