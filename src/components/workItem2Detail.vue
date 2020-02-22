@@ -68,9 +68,9 @@
             <template v-slot:default>
               <thead>
                 <tr>
-                  <th class="text-left">填報日期</th>
-                  <th class="text-left">進度說明</th>
-                  <th class="text-left">佐證資料</th>
+                  <th class="text-left" width="25%">填報日期</th>
+                  <th class="text-left" width="55%">進度說明</th>
+                  <th class="text-left" width="20%">佐證資料</th>
                 </tr>
               </thead>
               <tbody>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-toolbar dark color="primary" class="backButton">
+    <v-toolbar dark color="primary" class="NoPrint">
       <v-btn dark text class="px-0" @click="closeDia">
         <v-icon>mdi-backspace</v-icon>
         <span class="title">退回</span>
@@ -34,7 +34,7 @@
       <v-simple-table>
         <template v-slot:default>
           <thead>
-            <tr class="brown lighten-4">
+            <tr class="grey lighten-1">
               <th class="text-left font-weight-black" width="35%">工作項目</th>
               <th class="text-left font-weight-black" width="20%">負責單位</th>
               <th class="text-left font-weight-black" width="15%">結束日期</th>
@@ -119,13 +119,38 @@ export default {
   margin: 0;
 } */
 @media print {
-  .backButton {
+  .NoPrint {
     display: none;
   }
+  .v-content {
+    overflow: hidden;
+  }
+  .v-dialog {
+    overflow: hidden;
+  }
+
+
+  /* .v-navigation-drawer .v-footer {
+    display: none
+  }
+ */
+  /* html {
+    overflow: -moz-hidden-unscrollable;
+    height: 100%;
+  }
+
+  body::-webkit-scrollbar {
+    display: none;
+  }
+
+  body {
+    -ms-overflow-style: none;
+    height: 100%;
+    width: calc(100vw + 18px);
+    overflow: auto;
+  } */
   /* #oContent {
     page-break-inside:avoid;
   } */
-
 }
-
 </style>
