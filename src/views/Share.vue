@@ -10,9 +10,11 @@
 
         <v-expansion-panels accordion>
           <v-expansion-panel>
-            <v-expansion-panel-header class=""><span class="subtitle-1 font-weight-bold">功能選項</span></v-expansion-panel-header>
+            <v-expansion-panel-header class>
+              <span class="subtitle-1 font-weight-bold">功能選項</span>
+            </v-expansion-panel-header>
             <v-expansion-panel-content>
-              <v-row align="center" justify="space-around" class="mx-0 px-0  ">
+              <v-row align="center" justify="space-around" class="mx-0 px-0">
                 <v-col cols="8" class="py-0 px-0">
                   <v-text-field label="關鍵字搜尋..." v-model="searchword"></v-text-field>
                 </v-col>
@@ -20,7 +22,7 @@
                   <v-btn color="info" @click="searchFun">搜尋</v-btn>
                 </v-col>
               </v-row>
-              <v-row align="center" justify="space-around" class="mx-0 px-0  ">
+              <v-row align="center" justify="space-around" class="mx-0 px-0">
                 <v-col cols="6" class="py-0">
                   <v-btn text color="orange" @click="nearreported">顯示幾天內填報的資料</v-btn>
                 </v-col>
@@ -29,7 +31,7 @@
                 </v-col>
                 <v-col cols="4" class="py-0 px-0">搜尋填報資料</v-col>
               </v-row>
-              <v-row align="center" justify="space-around" class="mx-0 px-0  ">
+              <v-row align="center" justify="space-around" class="mx-0 px-0">
                 <v-col cols="8" class="py-0">
                   <v-menu
                     v-model="menu2"
@@ -56,7 +58,7 @@
                   </v-btn>
                 </v-col>
               </v-row>
-              <v-row align="center" justify="space-around" class="mx-0 px-0  ">
+              <v-row align="center" justify="space-around" class="mx-0 px-0">
                 <v-col cols="3" class="py-0 px-0 mx-0">
                   <v-checkbox v-model="multiple" label="挑選框"></v-checkbox>
                 </v-col>
@@ -603,13 +605,20 @@ export default {
         if (x.progress.length > 0) {
           progress = `${x.progress[0].pgdesc}(${x.progress[0].pgdate})`;
         }
+        let status = (x.status === "完成") ? x.status : x.remaindays 
 
         return {
           id: x.id,
-          depart: com_fun.RemoveHTML(x.depart),
-          endDate: com_fun.RemoveHTML(x.endDate),
-          title: com_fun.RemoveHTML(x.t_title),
-          progress: com_fun.RemoveHTML(progress)
+          depart: x.depart,
+          endDate: x.endDate,
+          title: x.title,
+          status: status,
+          progress: progress,
+          // depart: com_fun.RemoveHTML(x.depart),
+          // endDate: com_fun.RemoveHTML(x.endDate),
+          // title: com_fun.RemoveHTML(x.t_title),
+          // status: com_fun.RemoveHTML(x.status),
+          // progress: com_fun.RemoveHTML(progress)
         };
       });
       this.ReportDialog = true;

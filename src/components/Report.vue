@@ -6,6 +6,11 @@
         <span class="title">退回</span>
       </v-btn>
       <v-spacer></v-spacer>
+
+      <v-btn dark text class="pr-10" v-print="'#oContent'">
+        <v-icon>mdi-printer</v-icon>
+        <span class="title">列印</span>
+      </v-btn>
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn
@@ -35,18 +40,20 @@
         <template v-slot:default>
           <thead>
             <tr class="grey lighten-1">
-              <th class="text-left font-weight-black" width="35%">工作項目</th>
-              <th class="text-left font-weight-black" width="20%">負責單位</th>
-              <th class="text-left font-weight-black" width="15%">結束日期</th>
-              <th class="text-left font-weight-black" width="30%">進度說明</th>
+              <th class="text-left font-weight-black" width="28%">工作項目</th>
+              <th class="text-left font-weight-black" width="16%">負責單位</th>
+              <th class="text-left font-weight-black" width="18%">預定完成日期</th>
+              <th class="text-left font-weight-black" width="10%">狀態</th>
+              <th class="text-left font-weight-black" width="28%">進度說明</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="item in propData" :key="item.id">
-              <td>{{ item.title }}</td>
-              <td>{{ item.depart }}</td>
-              <td>{{ item.endDate }}</td>
-              <td>{{ item.progress }}</td>
+              <td v-html="item.title"></td>
+              <td v-html="item.depart"></td>
+              <td v-html="item.endDate"></td>
+              <td v-html="item.status"></td>
+              <td v-html="item.progress"></td>
             </tr>
           </tbody>
         </template>
@@ -128,29 +135,5 @@ export default {
   .v-dialog {
     overflow: hidden;
   }
-
-
-  /* .v-navigation-drawer .v-footer {
-    display: none
-  }
- */
-  /* html {
-    overflow: -moz-hidden-unscrollable;
-    height: 100%;
-  }
-
-  body::-webkit-scrollbar {
-    display: none;
-  }
-
-  body {
-    -ms-overflow-style: none;
-    height: 100%;
-    width: calc(100vw + 18px);
-    overflow: auto;
-  } */
-  /* #oContent {
-    page-break-inside:avoid;
-  } */
 }
 </style>

@@ -27,7 +27,8 @@ import 'viewerjs/dist/viewer.css'
 import Viewer from 'v-viewer'
 Vue.use(Viewer)
 
-
+import Print from 'vue-print-nb'
+Vue.use(Print); //註冊
 
 
 
